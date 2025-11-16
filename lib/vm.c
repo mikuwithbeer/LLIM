@@ -132,6 +132,21 @@ void llic_vm_execute(llic_vm_t *vm) {
     llic_stack_push(vm->stack, value);
     break;
   }
+  case COMMAND_COPY_REGISTER: {
+    const llic_register_id_t rid = (llic_register_id_t)command.args[0];
+    const llic_register_id_t rid2 = (llic_register_id_t)command.args[1];
+
+    uint16_t value;
+    if (!llic_register_get(vm->registers, rid, &value)) {
+      vm->error = llic_error_new(ERROR_UNKNOWN_REGISTER);
+      return;
+    }
+
+    if (!llic_register_set(&vm->registers, rid2, value))
+      vm->error = llic_error_new(ERROR_UNKNOWN_REGISTER);
+
+    break;
+  }
   case COMMAND_GET_MOUSE_POSITION: {
     if (!llic_config_check(vm->config, PERM_MOUSE)) {
       vm->error = llic_error_new(ERROR_PERMISSION_DENIED);
