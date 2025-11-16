@@ -26,3 +26,13 @@ uint8_t llic_command_to_argc(const llic_command_id_t id) {
     return UNREACHABLE_ARGC;
   }
 }
+
+llic_permission_t llic_permission_from_command(llic_command_id_t id) {
+  switch (id) {
+  case COMMAND_GET_MOUSE_POSITION:
+  case COMMAND_SET_MOUSE_POSITION:
+    return PERM_MOUSE;
+  default:
+    return PERM_NONE;
+  }
+}

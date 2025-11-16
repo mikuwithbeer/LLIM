@@ -1,7 +1,7 @@
 #ifndef LLIC_COMMAND_H
 #define LLIC_COMMAND_H
 
-#include <stdlib.h>
+#include "config.h"
 
 #define UNREACHABLE_ARGC 69
 
@@ -30,5 +30,6 @@ typedef struct {
 } llic_command_t;
 
 uint8_t llic_command_to_argc(llic_command_id_t id);
+llic_permission_t llic_permission_from_command(llic_command_id_t id);
 
 #endif // LLIC_COMMAND_H
