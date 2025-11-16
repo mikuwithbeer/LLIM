@@ -25,6 +25,9 @@ llic_error_t llic_error_new(const llic_error_id_t id) {
   case ERROR_MACOS_API:
     strcpy(error.message, "macos api error");
     break;
+  case ERROR_DIVIDE_BY_ZERO:
+    strcpy(error.message, "divide by zero");
+    break;
   }
 
   return error;

@@ -20,10 +20,10 @@ int main(void) {
   llic_bytecode_append(bytecode, COMMAND_SET_REGISTER);
   llic_bytecode_append(bytecode, 1);
   llic_bytecode_append(bytecode, 0);
-  llic_bytecode_append(bytecode, 3);
-  llic_bytecode_append(bytecode, COMMAND_COPY_REGISTER);
-  llic_bytecode_append(bytecode, 1);
   llic_bytecode_append(bytecode, 0);
+  llic_bytecode_append(bytecode, COMMAND_DIV_REGISTER);
+  llic_bytecode_append(bytecode, 0);
+  llic_bytecode_append(bytecode, 1);
   /*
   llic_bytecode_append(bytecode, COMMAND_SET_MOUSE_POSITION);
   llic_bytecode_append(bytecode, COMMAND_GET_MOUSE_POSITION);

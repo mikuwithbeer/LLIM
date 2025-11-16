@@ -12,6 +12,11 @@ uint8_t llic_command_to_argc(const llic_command_id_t id) {
     return 1;
   case COMMAND_PUSH:
   case COMMAND_COPY_REGISTER:
+  case COMMAND_ADD_REGISTER:
+  case COMMAND_SUB_REGISTER:
+  case COMMAND_MUL_REGISTER:
+  case COMMAND_DIV_REGISTER:
+  case COMMAND_MOD_REGISTER:
     return 2;
   case COMMAND_SET_REGISTER:
     return 3;
