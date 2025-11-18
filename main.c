@@ -70,12 +70,12 @@ int main(void) {
   llic_bytecode_append(bytecode, COMMAND_SET_REGISTER);
   llic_bytecode_append(bytecode, 0);
   llic_bytecode_append(bytecode, 0);
-  llic_bytecode_append(bytecode, 3);
+  llic_bytecode_append(bytecode, 2);
 
   llic_bytecode_append(bytecode, COMMAND_SET_REGISTER);
   llic_bytecode_append(bytecode, 1);
   llic_bytecode_append(bytecode, 0);
-  llic_bytecode_append(bytecode, 20);
+  llic_bytecode_append(bytecode, 100);
 
   llic_bytecode_append(bytecode, COMMAND_SCROLL_MOUSE);
 

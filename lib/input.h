@@ -49,6 +49,14 @@ uint8_t llic_input_set_mouse_position(uint16_t x, uint16_t y);
  */
 uint8_t llic_input_apply_mouse_event(llic_input_mouse_event_t type);
 
+/**
+ * @brief Simulates a mouse scroll event.
+ *
+ * @param power The intensity of the scroll.
+ * @param type The type of scroll (vertical or horizontal).
+ *
+ * @return Returns 1 on success, or 0 if the event simulation fails.
+ */
 uint8_t llic_input_scroll_mouse(uint16_t power, llic_input_scroll_event_t type);
 
 #endif // LLIC_INPUT_H

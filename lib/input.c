@@ -55,34 +55,35 @@ uint8_t llic_input_apply_mouse_event(const llic_input_mouse_event_t type) {
   return 1;
 }
 
-uint8_t llic_input_scroll_mouse(uint16_t power,
-                                llic_input_scroll_event_t type) {
+uint8_t llic_input_scroll_mouse(const uint16_t power,
+                                const llic_input_scroll_event_t type) {
 
-  int32_t delta_v, delta_h;
+  int32_t delta_v = 0;
+  int32_t delta_h = 0;
 
   switch (type) {
   case MOUSE_SCROLL_DOWN: {
-    delta_v = 0;
-    delta_h = -power;
-    break;
-  }
-  case MOUSE_SCROLL_UP: {
-    delta_v = 0;
-    delta_h = power;
-    break;
-  }
-  case MOUSE_SCROLL_LEFT: {
     delta_v = -power;
     delta_h = 0;
     break;
   }
-  case MOUSE_SCROLL_RIGHT: {
+  case MOUSE_SCROLL_UP: {
     delta_v = power;
     delta_h = 0;
     break;
   }
+  case MOUSE_SCROLL_LEFT: {
+    delta_v = 0;
+    delta_h = power;
+    break;
+  }
+  case MOUSE_SCROLL_RIGHT: {
+    delta_v = 0;
+    delta_h = -power;
+    break;
+  }
   default:
-    return 1;
+    return 0;
   }
 
   const CGEventRef event = CGEventCreateScrollWheelEvent(
