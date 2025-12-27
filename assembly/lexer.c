@@ -25,48 +25,36 @@ llic_lexer_t *llic_lexer_new(llic_string_t *source) {
 }
 
 uint8_t llic_lexer_next(llic_lexer_t *lexer) {
-  char determiner;
-  if (!llic_string_get(lexer->source, lexer->cursor, &determiner))
-    return 0;
+  char character;
 
-  lexer->cursor++;
+  if (!llic_string_get(lexer->source, lexer->cursor, &character))
+    return 0; // end of line
 
-  switch (determiner) {
-  case '.':
+  if (character == '\n') {
+    lexer->line++;
+    lexer->cursor++;
+
+    return 1;
+  }
+
+  if (character == '.') {
     lexer->state = LEXER_STATE_COMMAND;
-    break;
-  case '#':
+    lexer->cursor++; // consume the dot
+  } else if (character == '#') {
     lexer->state = LEXER_STATE_COMMENT;
-    break;
-  case '0':
-  case '1':
-  case '2':
-  case '3':
-  case '4':
-  case '5':
-  case '6':
-  case '7':
-  case '8':
-  case '9':
+    lexer->cursor++; // consume the hashtag
+  } else if (character >= '0' && character <= '9') {
     lexer->state = LEXER_STATE_NUMBER;
-    lexer->cursor--;
-    break;
-  case 'A':
-  case 'B':
-  case 'C':
-  case 'D':
-  case 'E':
-  case 'F': {
+  } else if (character >= 'A' && character <= 'F') {
     llic_string_t *register_name = llic_string_new();
-    llic_string_append(register_name, determiner);
+    llic_string_append(register_name, character);
 
     const llic_token_t token = llic_token_new(TOKEN_REGISTER, register_name);
     llic_token_list_append(lexer->tokens, token);
 
-    break;
-  }
-  default:
-    break;
+    lexer->cursor++; // consume the register
+  } else {
+    lexer->cursor++; // ignore character
   }
 
   return 1;
@@ -96,17 +84,13 @@ uint8_t llic_lexer_collect(llic_lexer_t *lexer) {
 uint8_t llic_lexer_collect_command(llic_lexer_t *lexer) {
   llic_string_t *command = llic_string_new();
   char character;
-  while (llic_string_get(lexer->source, lexer->cursor++, &character)) {
-    if (character > 64 && character < 91) {
+
+  while (llic_string_get(lexer->source, lexer->cursor, &character)) {
+    if (character >= 'A' && character <= 'Z') {
       llic_string_append(command, character);
-    } else if (character == '\n') {
-      lexer->line++;
-      break;
-    } else if (character == ' ' || character == '\r') {
-      break;
+      lexer->cursor++;
     } else {
-      llic_string_free(command);
-      return 0;
+      break;
     }
   }
 
@@ -115,14 +99,13 @@ uint8_t llic_lexer_collect_command(llic_lexer_t *lexer) {
     return 0;
   }
 
-  const llic_token_t token = llic_token_new(TOKEN_COMMAND, command);
-  llic_token_list_append(lexer->tokens, token);
-
+  llic_token_list_append(lexer->tokens, llic_token_new(TOKEN_COMMAND, command));
   return 1;
 }
 
 uint8_t llic_lexer_collect_comment(llic_lexer_t *lexer) {
   char character;
+
   while (llic_string_get(lexer->source, lexer->cursor++, &character)) {
     if (character == '\n') {
       lexer->line++;
@@ -134,30 +117,24 @@ uint8_t llic_lexer_collect_comment(llic_lexer_t *lexer) {
 }
 
 uint8_t llic_lexer_collect_number(llic_lexer_t *lexer) {
-  llic_string_t *command = llic_string_new();
+  llic_string_t *number = llic_string_new();
   char character;
-  while (llic_string_get(lexer->source, lexer->cursor++, &character)) {
-    if (character > 47 && character < 58) {
-      llic_string_append(command, character);
-    } else if (character == '\n') {
-      lexer->line++;
-      break;
-    } else if (character == ' ' || character == '\r') {
-      break;
+
+  while (llic_string_get(lexer->source, lexer->cursor, &character)) {
+    if (character >= '0' && character <= '9') {
+      llic_string_append(number, character);
+      lexer->cursor++;
     } else {
-      llic_string_free(command);
-      return 0;
+      break;
     }
   }
 
-  if (command->length == 0) {
-    llic_string_free(command);
+  if (number->length == 0) {
+    llic_string_free(number);
     return 0;
   }
 
-  const llic_token_t token = llic_token_new(TOKEN_NUMBER, command);
-  llic_token_list_append(lexer->tokens, token);
-
+  llic_token_list_append(lexer->tokens, llic_token_new(TOKEN_NUMBER, number));
   return 1;
 }
 

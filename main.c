@@ -4,7 +4,7 @@
 #include <stdio.h>
 
 int main(void) {
-  const char *lol = ".LOLA AAA 5314 A B 45 234 .LMAO #lmao\n .GET 31 69 .LOL # lmao .LOL";
+  const char *lol = ".LOL31A.XD69ABCDEF    \n\t 5 A\tB 45 234 .LMAO #lmao .GET 31 69 43858348583458348583838458 .LOL # lmao .XD";
   llic_string_t *str = llic_string_new();
   llic_string_extend(str, lol, strlen(lol));
 
