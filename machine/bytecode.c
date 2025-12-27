@@ -30,7 +30,7 @@ uint8_t llic_bytecode_get(const llic_bytecode_t *bytecode, const size_t index,
 
 uint8_t llic_bytecode_append(llic_bytecode_t *bytecode, const uint8_t value) {
   if (bytecode->length >= bytecode->capacity) {
-    bytecode->capacity *= 2; // i think its ok for now
+    bytecode->capacity *= 2;
 
     uint8_t *data = realloc(bytecode->data, bytecode->capacity);
     if (data == NULL)

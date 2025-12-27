@@ -6,7 +6,13 @@ set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_C_EXTENSIONS OFF)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-add_executable(llic main.c)
+add_executable(llic main.c
+        assembly/token.c
+        assembly/token.h
+        assembly/string.c
+        assembly/string.h
+        assembly/lexer.c
+        assembly/lexer.h)
 
 target_sources(llic PRIVATE
         machine/bytecode.c machine/bytecode.h
