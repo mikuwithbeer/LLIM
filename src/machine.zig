@@ -182,6 +182,18 @@ pub const Machine = struct {
 
                 self.register.set(destination_register, result);
             },
+            .PushRegister => {
+                const register_id = self.command.arguments[0];
+                const register = RegisterName.fromId(register_id) catch {
+                    return MachineError.InvalidRegisterId;
+                };
+
+                const value = self.register.get(register);
+
+                self.stack.push(value) catch {
+                    return MachineError.OutOfMemory;
+                };
+            },
             .Debug => {
                 std.debug.print("Registers:\n", .{});
                 std.debug.print("| A = 0x{X}\n", .{self.register.get(.A)});

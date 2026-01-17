@@ -9,6 +9,7 @@ pub const CommandID = enum {
     MultiplyRegister,
     DivideRegister,
     ModuloRegister,
+    PushRegister,
     Debug,
 
     pub fn fromBytecode(value: u8) ?CommandID {
@@ -23,6 +24,7 @@ pub const CommandID = enum {
             0x07 => CommandID.MultiplyRegister,
             0x08 => CommandID.DivideRegister,
             0x09 => CommandID.ModuloRegister,
+            0x0A => CommandID.PushRegister,
             0xFF => CommandID.Debug,
             else => null,
         };
@@ -40,6 +42,7 @@ pub const CommandID = enum {
             .MultiplyRegister => 3,
             .DivideRegister => 3,
             .ModuloRegister => 3,
+            .PushRegister => 1,
             .Debug => 0,
         };
     }

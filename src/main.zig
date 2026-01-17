@@ -40,6 +40,9 @@ pub fn main() !void {
         0x00,
         0x01,
         0xff, //
+        0x0A, //
+        0x00, //
+        0xff, //
     }) catch |err| {
         std.debug.print("Error building bytecode: {}\n", .{err});
         return err;
