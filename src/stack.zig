@@ -1,5 +1,7 @@
 const std = @import("std");
 
+pub const StackSize = 512;
+
 pub const StackError = error{
     StackOverflow,
     StackUnderflow,
@@ -8,7 +10,6 @@ pub const StackError = error{
 
 pub const Stack = struct {
     allocator: std.mem.Allocator,
-
     capacity: usize,
     values: std.ArrayList(u16),
 
