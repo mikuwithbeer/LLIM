@@ -4,7 +4,10 @@ const Bytecode = @import("bytecode.zig").Bytecode;
 const Machine = @import("machine.zig").Machine;
 
 pub fn main() !void {
-    const allocator = std.heap.page_allocator;
+    var gpa = std.heap.DebugAllocator(.{}){};
+    defer _ = gpa.deinit();
+
+    const allocator = gpa.allocator();
 
     var bytecode = try Bytecode.init(allocator);
     defer bytecode.deinit();
@@ -25,6 +28,15 @@ pub fn main() !void {
         0x03,
         0x02, //
         0x01,
+        0xff, //
+        0x03, //
+        0x04,
+        0x00,
+        0x3A,
+        0xff, //
+        0x04, //
+        0x01,
+        0x00,
         0xff, //
     }) catch |err| {
         std.debug.print("Error building bytecode: {}\n", .{err});
