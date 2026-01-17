@@ -1,0 +1,22 @@
+# Zig build outputs
+.zig-cache/
+zig-out/
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Build artifacts
+/build/
+/dist/
+
+# Dependency lock files
+.zig-lock
+
+# OS-specific
+Thumbs.db
+.env
