@@ -2,6 +2,8 @@ pub const CommandID = enum {
     None,
     PushConst,
     PopConst,
+    MoveConstToRegister,
+    CopyRegister,
     Debug,
 
     pub fn fromBytecode(value: u8) ?CommandID {
@@ -9,6 +11,8 @@ pub const CommandID = enum {
             0x00 => CommandID.None,
             0x01 => CommandID.PushConst,
             0x02 => CommandID.PopConst,
+            0x03 => CommandID.MoveConstToRegister,
+            0x04 => CommandID.CopyRegister,
             0xFF => CommandID.Debug,
             else => null,
         };
@@ -19,6 +23,8 @@ pub const CommandID = enum {
             .None => 0,
             .PushConst => 2,
             .PopConst => 1,
+            .MoveConstToRegister => 3,
+            .CopyRegister => 2,
             .Debug => 0,
         };
     }

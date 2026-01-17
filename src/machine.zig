@@ -122,6 +122,32 @@ pub const Machine = struct {
 
                 self.register.set(register, value);
             },
+            .MoveConstToRegister => {
+                const register_id = self.command.arguments[0];
+                const register = RegisterName.fromId(register_id) catch {
+                    return MachineError.InvalidRegisterId;
+                };
+
+                const high = self.command.arguments[1];
+                const low = self.command.arguments[2];
+                const value: u16 = (@as(u16, high) << 8) | @as(u16, low);
+
+                self.register.set(register, value);
+            },
+            .CopyRegister => {
+                const source_register_id = self.command.arguments[0];
+                const target_register_id = self.command.arguments[1];
+
+                const source_register = RegisterName.fromId(source_register_id) catch {
+                    return MachineError.InvalidRegisterId;
+                };
+                const target_register = RegisterName.fromId(target_register_id) catch {
+                    return MachineError.InvalidRegisterId;
+                };
+
+                const value = self.register.get(source_register);
+                self.register.set(target_register, value);
+            },
             .Debug => {
                 std.debug.print("Registers:\n", .{});
                 std.debug.print("| A = 0x{X}\n", .{self.register.get(.A)});
