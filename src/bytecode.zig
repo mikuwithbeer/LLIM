@@ -9,6 +9,8 @@ pub const BytecodeError = error{
 
 pub const Bytecode = struct {
     allocator: std.mem.Allocator,
+
+    cursor: usize,
     values: std.ArrayList(u8),
 
     pub fn init(allocator: std.mem.Allocator) BytecodeError!Bytecode {
@@ -18,6 +20,7 @@ pub const Bytecode = struct {
 
         return Bytecode{
             .allocator = allocator,
+            .cursor = 0,
             .values = values,
         };
     }
@@ -38,12 +41,15 @@ pub const Bytecode = struct {
         return self.values.items.len;
     }
 
-    pub fn get(self: *Bytecode, index: usize) BytecodeError!u8 {
-        if (index >= self.length()) {
-            return BytecodeError.IndexOutOfRange;
+    pub fn next(self: *Bytecode) ?u8 {
+        if (self.cursor >= self.length()) {
+            return null;
         }
 
-        return self.values.items[index];
+        const value = self.values.items[self.cursor];
+        self.cursor += 1;
+
+        return value;
     }
 
     pub fn deinit(self: *Bytecode) void {

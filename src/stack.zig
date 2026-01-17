@@ -10,18 +10,19 @@ pub const StackError = error{
 
 pub const Stack = struct {
     allocator: std.mem.Allocator,
+
     capacity: usize,
     values: std.ArrayList(u16),
 
-    pub fn init(allocator: std.mem.Allocator, capacity: usize) StackError!Stack {
-        const values = std.ArrayList(u16).initCapacity(allocator, capacity) catch {
+    pub fn init(allocator: std.mem.Allocator) StackError!Stack {
+        const values = std.ArrayList(u16).initCapacity(allocator, StackSize) catch {
             return StackError.OutOfMemory;
         };
 
         return Stack{
             .allocator = allocator,
 
-            .capacity = capacity,
+            .capacity = StackSize,
             .values = values,
         };
     }
