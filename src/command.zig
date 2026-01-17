@@ -4,6 +4,11 @@ pub const CommandID = enum {
     PopConst,
     MoveConstToRegister,
     CopyRegister,
+    AddRegister,
+    SubtractRegister,
+    MultiplyRegister,
+    DivideRegister,
+    ModuloRegister,
     Debug,
 
     pub fn fromBytecode(value: u8) ?CommandID {
@@ -13,6 +18,11 @@ pub const CommandID = enum {
             0x02 => CommandID.PopConst,
             0x03 => CommandID.MoveConstToRegister,
             0x04 => CommandID.CopyRegister,
+            0x05 => CommandID.AddRegister,
+            0x06 => CommandID.SubtractRegister,
+            0x07 => CommandID.MultiplyRegister,
+            0x08 => CommandID.DivideRegister,
+            0x09 => CommandID.ModuloRegister,
             0xFF => CommandID.Debug,
             else => null,
         };
@@ -25,6 +35,11 @@ pub const CommandID = enum {
             .PopConst => 1,
             .MoveConstToRegister => 3,
             .CopyRegister => 2,
+            .AddRegister => 3,
+            .SubtractRegister => 3,
+            .MultiplyRegister => 3,
+            .DivideRegister => 3,
+            .ModuloRegister => 3,
             .Debug => 0,
         };
     }

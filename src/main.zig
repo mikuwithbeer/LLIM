@@ -34,9 +34,11 @@ pub fn main() !void {
         0x00,
         0x3A,
         0xff, //
-        0x04, //
-        0x01,
+        0xff, //
+        0x05, //
+        0x02,
         0x00,
+        0x01,
         0xff, //
     }) catch |err| {
         std.debug.print("Error building bytecode: {}\n", .{err});

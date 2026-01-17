@@ -17,6 +17,7 @@ pub const MachineError = error{
     OutOfMemory,
     InvalidCommand,
     InvalidRegisterId,
+    DivideByZero,
 };
 
 pub const Machine = struct {
@@ -147,6 +148,39 @@ pub const Machine = struct {
 
                 const value = self.register.get(source_register);
                 self.register.set(target_register, value);
+            },
+            .AddRegister, .SubtractRegister, .MultiplyRegister, .DivideRegister, .ModuloRegister => {
+                const destination_register_id = self.command.arguments[0];
+                const left_register_id = self.command.arguments[1];
+                const right_register_id = self.command.arguments[2];
+
+                const destination_register = RegisterName.fromId(destination_register_id) catch {
+                    return MachineError.InvalidRegisterId;
+                };
+                const left_register = RegisterName.fromId(left_register_id) catch {
+                    return MachineError.InvalidRegisterId;
+                };
+                const right_register = RegisterName.fromId(right_register_id) catch {
+                    return MachineError.InvalidRegisterId;
+                };
+
+                const left_value = self.register.get(left_register);
+                const right_value = self.register.get(right_register);
+
+                if ((self.command.id == .DivideRegister or self.command.id == .ModuloRegister) and (right_value == 0)) {
+                    return MachineError.DivideByZero;
+                }
+
+                const result = switch (self.command.id) {
+                    .AddRegister => left_value + right_value,
+                    .SubtractRegister => left_value - right_value,
+                    .MultiplyRegister => left_value * right_value,
+                    .DivideRegister => left_value / right_value,
+                    .ModuloRegister => left_value % right_value,
+                    else => unreachable,
+                };
+
+                self.register.set(destination_register, result);
             },
             .Debug => {
                 std.debug.print("Registers:\n", .{});
