@@ -9,7 +9,7 @@
 /// Represents all possible command opcodes for the VM.
 typedef enum {
   // vm ops
-  COMMAND_NOP = 0,
+  COMMAND_NOP = 1,
   COMMAND_JUMP_BACK,
   COMMAND_JUMP_FORWARD,
   COMMAND_HALT,

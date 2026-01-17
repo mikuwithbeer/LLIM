@@ -1,5 +1,7 @@
 #include "string.h"
 
+#include <string.h>
+
 llic_string_t *llic_string_new(void) {
   llic_string_t *string = malloc(sizeof(llic_string_t));
   if (string == NULL) {
@@ -33,6 +35,8 @@ uint8_t llic_string_append(llic_string_t *string, const char character) {
   }
 
   string->data[string->length++] = character;
+  string->data[string->length] = '\0';
+
   return 1;
 }
 
@@ -56,6 +60,10 @@ uint8_t llic_string_get(const llic_string_t *string, const size_t index,
 
 uint8_t llic_string_length(const llic_string_t *string) {
   return string->length;
+}
+
+uint8_t llic_string_compare(const llic_string_t *string, const char *data) {
+  return strncmp(string->data, data, string->length) == 0;
 }
 
 void llic_string_free(llic_string_t *string) {

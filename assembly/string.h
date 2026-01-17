@@ -21,6 +21,8 @@ uint8_t llic_string_get(const llic_string_t *string, size_t index, char *out);
 
 uint8_t llic_string_length(const llic_string_t *string);
 
+uint8_t llic_string_compare(const llic_string_t *string, const char *data);
+
 void llic_string_free(llic_string_t *string);
 
 #endif // LLIC_STRING_H

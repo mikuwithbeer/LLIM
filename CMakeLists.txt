@@ -12,7 +12,8 @@ add_executable(llic main.c
         assembly/string.c
         assembly/string.h
         assembly/lexer.c
-        assembly/lexer.h)
+        assembly/lexer.h
+)
 
 target_sources(llic PRIVATE
         machine/bytecode.c machine/bytecode.h
