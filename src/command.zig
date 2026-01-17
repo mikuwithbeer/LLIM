@@ -2,12 +2,14 @@ pub const CommandID = enum {
     None,
     PushConst,
     PopConst,
+    Debug,
 
     pub fn fromBytecode(value: u8) ?CommandID {
         return switch (value) {
             0x00 => CommandID.None,
             0x01 => CommandID.PushConst,
             0x02 => CommandID.PopConst,
+            0xFF => CommandID.Debug,
             else => null,
         };
     }
@@ -17,6 +19,7 @@ pub const CommandID = enum {
             .None => 0,
             .PushConst => 2,
             .PopConst => 1,
+            .Debug => 0,
         };
     }
 };

@@ -4,6 +4,7 @@ const Bytecode = @import("bytecode.zig").Bytecode;
 const Command = @import("command.zig").Command;
 const CommandID = @import("command.zig").CommandID;
 const Register = @import("register.zig").Register;
+const RegisterName = @import("register.zig").RegisterName;
 const Stack = @import("stack.zig").Stack;
 
 pub const MachineState = enum {
@@ -14,6 +15,8 @@ pub const MachineState = enum {
 
 pub const MachineError = error{
     OutOfMemory,
+    InvalidCommand,
+    InvalidRegisterId,
 };
 
 pub const Machine = struct {
@@ -55,14 +58,14 @@ pub const Machine = struct {
                 const byte = opcode.?;
 
                 if (self.state == .Execute) {
-                    self.startExecution();
+                    try self.startExecution();
                     self.finishExecution();
                 }
 
                 if (self.state == .Idle) {
                     const command_id = CommandID.fromBytecode(byte);
                     if (command_id == null) {
-                        continue;
+                        return MachineError.InvalidCommand;
                     }
 
                     counter = CommandID.argumentCount(command_id.?);
@@ -95,8 +98,45 @@ pub const Machine = struct {
         self.state = .Execute;
     }
 
-    pub fn startExecution(self: *Machine) void {
-        std.debug.print("Executing Command: id={} args={any}\n", .{ self.command.id, self.command.arguments[0..self.command.count] });
+    pub fn startExecution(self: *Machine) MachineError!void {
+        switch (self.command.id) {
+            .None => {},
+            .PushConst => {
+                const high = self.command.arguments[0];
+                const low = self.command.arguments[1];
+                const value: u16 = (@as(u16, high) << 8) | @as(u16, low);
+
+                self.stack.push(value) catch {
+                    return MachineError.OutOfMemory;
+                };
+            },
+            .PopConst => {
+                const register_id = self.command.arguments[0];
+                const register = RegisterName.fromId(register_id) catch {
+                    return MachineError.InvalidRegisterId;
+                };
+
+                const value = self.stack.pop() catch {
+                    return MachineError.OutOfMemory;
+                };
+
+                self.register.set(register, value);
+            },
+            .Debug => {
+                std.debug.print("Registers:\n", .{});
+                std.debug.print("| A = 0x{X}\n", .{self.register.get(.A)});
+                std.debug.print("| B = 0x{X}\n", .{self.register.get(.B)});
+                std.debug.print("| C = 0x{X}\n", .{self.register.get(.C)});
+                std.debug.print("| D = 0x{X}\n", .{self.register.get(.D)});
+                std.debug.print("| E = 0x{X}\n", .{self.register.get(.E)});
+                std.debug.print("| F = 0x{X}\n", .{self.register.get(.F)});
+
+                std.debug.print("Stack:\n", .{});
+                for (self.stack.values.items) |value| {
+                    std.debug.print("| 0x{X}\n", .{value});
+                }
+            },
+        }
     }
 
     pub fn finishExecution(self: *Machine) void {

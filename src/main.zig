@@ -1,7 +1,6 @@
 const std = @import("std");
 
 const Bytecode = @import("bytecode.zig").Bytecode;
-
 const Machine = @import("machine.zig").Machine;
 
 pub fn main() !void {
@@ -16,14 +15,17 @@ pub fn main() !void {
         0x00,
         0x2a,
         0x02, //
-        0xbf,
-        0x02, //
-        0x01,
+        0x00,
+        0x00, //
+        0x01, //
+        0x00,
+        0x03,
         0x01, //
         0xaa,
-        0xbb,
-        0x00, //
-        0x00, //
+        0x03,
+        0x02, //
+        0x01,
+        0xff, //
     }) catch |err| {
         std.debug.print("Error building bytecode: {}\n", .{err});
         return err;
@@ -34,6 +36,6 @@ pub fn main() !void {
 
     machine.loop() catch |err| {
         std.debug.print("Machine error: {}\n", .{err});
-        return err;
+        return;
     };
 }
