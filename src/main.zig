@@ -5,20 +5,31 @@ const Machine = @import("machine.zig").Machine;
 
 pub fn main() !void {
     var gpa = std.heap.DebugAllocator(.{}){};
-    defer _ = gpa.deinit();
+    defer std.debug.assert(gpa.deinit() == .ok);
 
     const allocator = gpa.allocator();
 
-    var bytecode = try Bytecode.fromFile(allocator, "test.llimb");
+    const args = try std.process.argsAlloc(allocator);
+    defer std.process.argsFree(allocator, args);
+
+    if (args.len < 3) {
+        std.debug.print("Usage: LLIM run file\n", .{});
+        return;
+    }
+
+    const mode = args[1];
+    const file = args[2];
+
+    var bytecode = try Bytecode.fromFile(allocator, file);
     defer bytecode.deinit();
 
-    var machine = try Machine.init(allocator, bytecode);
-    defer machine.deinit();
+    if (std.mem.eql(u8, mode, "run")) {
+        var machine = try Machine.init(allocator, bytecode);
+        defer machine.deinit();
 
-    machine.setPermission(.Write);
-
-    machine.loop() catch |err| {
-        std.debug.print("Machine error: {}\n", .{err});
-        return;
-    };
+        machine.setPermission(.Write);
+        try machine.loop();
+    } else {
+        std.debug.print("Unknown mode: {s}\n", .{mode});
+    }
 }

@@ -4,6 +4,7 @@ const Bytecode = @import("bytecode.zig").Bytecode;
 const Command = @import("command.zig").Command;
 const CommandID = @import("command.zig").CommandID;
 const Input = @import("input.zig").Input;
+const MouseClick = @import("input.zig").MouseClick;
 const Register = @import("register.zig").Register;
 const RegisterName = @import("register.zig").RegisterName;
 const Stack = @import("stack.zig").Stack;
@@ -16,6 +17,8 @@ pub const MachineError = error{
     DivideByZero,
     FailedToGetMousePosition,
     FailedToSetMousePosition,
+    InvalidMouseButton,
+    FailedToClickMouse,
 };
 
 pub const MachinePermission = enum {
@@ -239,6 +242,16 @@ pub const Machine = struct {
 
                 Input.setMousePosition(x, y) catch {
                     return MachineError.FailedToSetMousePosition;
+                };
+            },
+            .MouseClick => {
+                const button_id = self.command.arguments[0];
+                const button = MouseClick.fromId(button_id) orelse {
+                    return MachineError.InvalidMouseButton;
+                };
+
+                Input.clickMouse(button) catch {
+                    return MachineError.FailedToClickMouse;
                 };
             },
             .Debug => {

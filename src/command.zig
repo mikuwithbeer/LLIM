@@ -12,6 +12,7 @@ pub const CommandID = enum {
     PushRegister,
     GetMousePosition,
     SetMousePosition,
+    MouseClick,
     Debug,
 
     pub fn fromBytecode(value: u8) ?CommandID {
@@ -31,6 +32,7 @@ pub const CommandID = enum {
             // Mouse Controlling
             0x90 => CommandID.GetMousePosition,
             0x91 => CommandID.SetMousePosition,
+            0x92 => CommandID.MouseClick,
             // Debugging
             0xFF => CommandID.Debug,
             else => null,
@@ -52,6 +54,7 @@ pub const CommandID = enum {
             .PushRegister => 1,
             .GetMousePosition => 0,
             .SetMousePosition => 0,
+            .MouseClick => 1,
             .Debug => 0,
         };
     }
