@@ -8,13 +8,8 @@ const Register = @import("register.zig").Register;
 const RegisterName = @import("register.zig").RegisterName;
 const Stack = @import("stack.zig").Stack;
 
-pub const MachineState = enum {
-    Idle,
-    Collect,
-    Execute,
-};
-
 pub const MachineError = error{
+    PermissionDenied,
     OutOfMemory,
     InvalidCommand,
     InvalidRegisterId,
@@ -22,11 +17,32 @@ pub const MachineError = error{
     FailedToGetMousePosition,
 };
 
+pub const MachinePermission = enum {
+    None,
+    Read,
+    Write,
+
+    pub fn checkPermission(self: MachinePermission, command: Command) bool {
+        return switch (command.id) {
+            .GetMousePosition => self == .Read or self == .Write,
+            .Debug => self == .Read or self == .Write,
+            else => true,
+        };
+    }
+};
+
+pub const MachineState = enum {
+    Idle,
+    Collect,
+    Execute,
+};
+
 pub const Machine = struct {
     allocator: std.mem.Allocator,
 
     bytecode: Bytecode,
     command: Command,
+    permission: MachinePermission,
     register: Register,
     stack: Stack,
     state: MachineState,
@@ -42,10 +58,15 @@ pub const Machine = struct {
 
             .bytecode = bytecode,
             .command = Command.init(.None),
+            .permission = .None,
             .register = register,
             .stack = stack,
             .state = .Idle,
         };
+    }
+
+    pub fn setPermission(self: *Machine, permission: MachinePermission) void {
+        self.permission = permission;
     }
 
     pub fn loop(self: *Machine) MachineError!void {
@@ -102,6 +123,10 @@ pub const Machine = struct {
     }
 
     pub fn startExecution(self: *Machine) MachineError!void {
+        if (!self.permission.checkPermission(self.command)) {
+            return MachineError.PermissionDenied;
+        }
+
         switch (self.command.id) {
             .None => {},
             .PushConst => {

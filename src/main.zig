@@ -53,6 +53,8 @@ pub fn main() !void {
     var machine = try Machine.init(allocator, bytecode);
     defer machine.deinit();
 
+    machine.setPermission(.Read);
+
     machine.loop() catch |err| {
         std.debug.print("Machine error: {}\n", .{err});
         return;
