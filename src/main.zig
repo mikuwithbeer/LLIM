@@ -9,52 +9,8 @@ pub fn main() !void {
 
     const allocator = gpa.allocator();
 
-    var bytecode = try Bytecode.init(allocator);
+    var bytecode = try Bytecode.fromFile(allocator, "test.llimb");
     defer bytecode.deinit();
-
-    bytecode.extend(&[_]u8{
-        0x00, //
-        0x01, //
-        0x00,
-        0x2a,
-        0x02, //
-        0x00,
-        0x00, //
-        0x01, //
-        0x00,
-        0xad,
-        0x01, //
-        0xaa,
-        0x03,
-        0x02, //
-        0x01,
-        0xff, //
-        0x03, //
-        0x04,
-        0x00,
-        0x3A,
-        0xff, //
-        0xff, //
-        0x05, //
-        0x02,
-        0x00,
-        0x01,
-        0xff, //
-        0x0A, //
-        0x00, //
-        0xff, //
-        0x90, //
-        0xFF, //
-        0x02,
-        0x03,
-        0x02,
-        0x04,
-        0x91, //
-        0xFF, //
-    }) catch |err| {
-        std.debug.print("Error building bytecode: {}\n", .{err});
-        return err;
-    };
 
     var machine = try Machine.init(allocator, bytecode);
     defer machine.deinit();

@@ -5,6 +5,7 @@ pub const BytecodeSize = 1024;
 pub const BytecodeError = error{
     OutOfMemory,
     IndexOutOfRange,
+    FailedToReadFile,
 };
 
 pub const Bytecode = struct {
@@ -25,6 +26,32 @@ pub const Bytecode = struct {
         };
     }
 
+    pub fn fromFile(allocator: std.mem.Allocator, path: []const u8) BytecodeError!Bytecode {
+        const file = std.fs.cwd().openFile(path, .{ .mode = .read_only }) catch {
+            return BytecodeError.FailedToReadFile;
+        };
+
+        defer file.close();
+
+        var bytecode = try Bytecode.init(allocator);
+        var buffer: [BytecodeSize]u8 = undefined;
+
+        while (true) {
+            const result = file.read(&buffer) catch {
+                bytecode.deinit();
+                return BytecodeError.FailedToReadFile;
+            };
+
+            if (result == 0) {
+                break;
+            }
+
+            try bytecode.extend(buffer[0..result]);
+        }
+
+        return bytecode;
+    }
+
     pub fn append(self: *Bytecode, value: u8) BytecodeError!void {
         self.values.append(self.allocator, value) catch {
             return BytecodeError.OutOfMemory;
@@ -32,9 +59,9 @@ pub const Bytecode = struct {
     }
 
     pub fn extend(self: *Bytecode, other: []const u8) BytecodeError!void {
-        for (other) |value| {
-            try self.append(value);
-        }
+        self.values.appendSlice(self.allocator, other) catch {
+            return BytecodeError.OutOfMemory;
+        };
     }
 
     pub fn length(self: *Bytecode) usize {
