@@ -2,6 +2,10 @@ const C = @cImport({
     @cInclude("CoreGraphics/CoreGraphics.h");
 });
 
+pub const InputError = error{
+    FailedToSetMousePosition,
+};
+
 pub const Input = struct {
     pub fn getMousePosition() ?[2]u16 {
         const event = C.CGEventCreate(null);
@@ -16,5 +20,16 @@ pub const Input = struct {
         }
 
         return null;
+    }
+
+    pub fn setMousePosition(x: u16, y: u16) InputError!void {
+        const point = C.CGPointMake(@floatFromInt(x), @floatFromInt(y));
+        if (C.CGWarpMouseCursorPosition(point) != C.kCGErrorSuccess) {
+            return InputError.FailedToSetMousePosition;
+        }
+
+        if (C.CGAssociateMouseAndMouseCursorPosition(C.TRUE) != C.kCGErrorSuccess) {
+            return InputError.FailedToSetMousePosition;
+        }
     }
 };

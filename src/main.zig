@@ -22,7 +22,7 @@ pub fn main() !void {
         0x00, //
         0x01, //
         0x00,
-        0x03,
+        0xad,
         0x01, //
         0xaa,
         0x03,
@@ -45,6 +45,12 @@ pub fn main() !void {
         0xff, //
         0x90, //
         0xFF, //
+        0x02,
+        0x03,
+        0x02,
+        0x04,
+        0x91, //
+        0xFF, //
     }) catch |err| {
         std.debug.print("Error building bytecode: {}\n", .{err});
         return err;
@@ -53,7 +59,7 @@ pub fn main() !void {
     var machine = try Machine.init(allocator, bytecode);
     defer machine.deinit();
 
-    machine.setPermission(.Read);
+    machine.setPermission(.Write);
 
     machine.loop() catch |err| {
         std.debug.print("Machine error: {}\n", .{err});

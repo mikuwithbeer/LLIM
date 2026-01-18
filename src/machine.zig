@@ -15,6 +15,7 @@ pub const MachineError = error{
     InvalidRegisterId,
     DivideByZero,
     FailedToGetMousePosition,
+    FailedToSetMousePosition,
 };
 
 pub const MachinePermission = enum {
@@ -25,6 +26,7 @@ pub const MachinePermission = enum {
     pub fn checkPermission(self: MachinePermission, command: Command) bool {
         return switch (command.id) {
             .GetMousePosition => self == .Read or self == .Write,
+            .SetMousePosition => self == .Write,
             .Debug => self == .Read or self == .Write,
             else => true,
         };
@@ -78,11 +80,10 @@ pub const Machine = struct {
 
         while (true) {
             const opcode = self.bytecode.next();
-            if (opcode != null) {
-                const byte = opcode.?;
-
+            if (opcode) |byte| {
                 if (self.state == .Execute) {
                     try self.startExecution();
+                    try self.doExecution();
                     self.finishExecution();
                 }
 
@@ -126,7 +127,9 @@ pub const Machine = struct {
         if (!self.permission.checkPermission(self.command)) {
             return MachineError.PermissionDenied;
         }
+    }
 
+    pub fn doExecution(self: *Machine) MachineError!void {
         switch (self.command.id) {
             .None => {},
             .PushConst => {
@@ -223,14 +226,20 @@ pub const Machine = struct {
             },
             .GetMousePosition => {
                 const cursor = Input.getMousePosition();
-                if (cursor != null) {
-                    const positions = cursor.?;
-
-                    self.register.set(.A, positions[0]);
-                    self.register.set(.B, positions[1]);
+                if (cursor) |positions| {
+                    self.register.set(.D, positions[0]);
+                    self.register.set(.E, positions[1]);
                 } else {
                     return MachineError.FailedToGetMousePosition;
                 }
+            },
+            .SetMousePosition => {
+                const x = self.register.get(.D);
+                const y = self.register.get(.E);
+
+                Input.setMousePosition(x, y) catch {
+                    return MachineError.FailedToSetMousePosition;
+                };
             },
             .Debug => {
                 std.debug.print("Registers:\n", .{});
