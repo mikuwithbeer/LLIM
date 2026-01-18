@@ -3,6 +3,7 @@ const std = @import("std");
 const Bytecode = @import("bytecode.zig").Bytecode;
 const Command = @import("command.zig").Command;
 const CommandID = @import("command.zig").CommandID;
+const Input = @import("input.zig").Input;
 const Register = @import("register.zig").Register;
 const RegisterName = @import("register.zig").RegisterName;
 const Stack = @import("stack.zig").Stack;
@@ -18,6 +19,7 @@ pub const MachineError = error{
     InvalidCommand,
     InvalidRegisterId,
     DivideByZero,
+    FailedToGetMousePosition,
 };
 
 pub const Machine = struct {
@@ -193,6 +195,17 @@ pub const Machine = struct {
                 self.stack.push(value) catch {
                     return MachineError.OutOfMemory;
                 };
+            },
+            .GetMousePosition => {
+                const cursor = Input.getMousePosition();
+                if (cursor != null) {
+                    const positions = cursor.?;
+
+                    self.register.set(.A, positions[0]);
+                    self.register.set(.B, positions[1]);
+                } else {
+                    return MachineError.FailedToGetMousePosition;
+                }
             },
             .Debug => {
                 std.debug.print("Registers:\n", .{});

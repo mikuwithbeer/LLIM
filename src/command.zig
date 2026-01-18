@@ -10,10 +10,12 @@ pub const CommandID = enum {
     DivideRegister,
     ModuloRegister,
     PushRegister,
+    GetMousePosition,
     Debug,
 
     pub fn fromBytecode(value: u8) ?CommandID {
         return switch (value) {
+            // Arithmetic and Data Management
             0x00 => CommandID.None,
             0x01 => CommandID.PushConst,
             0x02 => CommandID.PopConst,
@@ -25,6 +27,9 @@ pub const CommandID = enum {
             0x08 => CommandID.DivideRegister,
             0x09 => CommandID.ModuloRegister,
             0x0A => CommandID.PushRegister,
+            // Mouse Controlling
+            0x90 => CommandID.GetMousePosition,
+            // Debugging
             0xFF => CommandID.Debug,
             else => null,
         };
@@ -43,6 +48,7 @@ pub const CommandID = enum {
             .DivideRegister => 3,
             .ModuloRegister => 3,
             .PushRegister => 1,
+            .GetMousePosition => 0,
             .Debug => 0,
         };
     }
