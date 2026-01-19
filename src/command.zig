@@ -13,11 +13,15 @@ pub const CommandID = enum {
     DivideRegister,
     ModuloRegister,
     PushRegister,
+
     SleepSeconds,
     SleepMilliseconds,
+    ExitMachine,
+
     GetMousePosition,
     SetMousePosition,
     MouseClick,
+
     Debug,
 
     /// Converts a `u8` value to a `CommandID` enum variant.
@@ -38,6 +42,7 @@ pub const CommandID = enum {
             // OS Operations
             0x60 => CommandID.SleepSeconds,
             0x61 => CommandID.SleepMilliseconds,
+            0x62 => CommandID.ExitMachine,
             // Mouse Controlling
             0x90 => CommandID.GetMousePosition,
             0x91 => CommandID.SetMousePosition,
@@ -63,11 +68,15 @@ pub const CommandID = enum {
             .DivideRegister => 3,
             .ModuloRegister => 3,
             .PushRegister => 1,
+
             .SleepSeconds => 0,
             .SleepMilliseconds => 0,
+            .ExitMachine => 0,
+
             .GetMousePosition => 0,
             .SetMousePosition => 0,
             .MouseClick => 1,
+
             .Debug => 0,
         };
     }

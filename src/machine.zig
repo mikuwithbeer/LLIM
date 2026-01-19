@@ -51,6 +51,7 @@ pub const MachineState = enum {
     Idle,
     Collect,
     Execute,
+    Exit,
 };
 
 /// Represents the virtual machine.
@@ -105,7 +106,12 @@ pub const Machine = struct {
                 if (self.state == .Execute) {
                     try self.startExecution();
                     try self.doExecution();
-                    self.finishExecution();
+
+                    if (self.state == .Exit) {
+                        break;
+                    } else {
+                        self.finishExecution();
+                    }
                 }
 
                 if (self.state == .Idle) {
@@ -261,6 +267,9 @@ pub const Machine = struct {
                     std.time.ns_per_ms;
 
                 std.Thread.sleep(@as(u64, seconds) * multiplier);
+            },
+            .ExitMachine => {
+                self.state = .Exit;
             },
             .GetMousePosition => {
                 const cursor = Input.getMousePosition();
