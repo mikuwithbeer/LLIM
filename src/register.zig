@@ -15,6 +15,7 @@ pub const RegisterName = enum {
     D,
     E,
     F,
+    I,
 
     /// Converts the register name to its corresponding ID.
     pub fn toId(self: RegisterName) u8 {
@@ -25,6 +26,7 @@ pub const RegisterName = enum {
             .D => 3,
             .E => 4,
             .F => 5,
+            .I => 6,
         };
     }
 
@@ -38,6 +40,7 @@ pub const RegisterName = enum {
             3 => .D,
             4 => .E,
             5 => .F,
+            6 => .I,
             else => RegisterError.InvalidRegisterId,
         };
     }
@@ -45,12 +48,12 @@ pub const RegisterName = enum {
 
 /// Represents a set of six general-purpose registers.
 pub const Register = struct {
-    values: [6]u16,
+    values: [7]u16,
 
     /// Initializes a new set of registers with all values set to zero.
     pub fn init() Register {
         return Register{
-            .values = [_]u16{ 0, 0, 0, 0, 0, 0 },
+            .values = [_]u16{ 0, 0, 0, 0, 0, 0, 0 },
         };
     }
 
