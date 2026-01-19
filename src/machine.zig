@@ -25,6 +25,7 @@ pub const MachineError = error{
     FailedToSetMousePosition,
     InvalidMouseButton,
     FailedToClickMouse,
+    FailedToJump,
 };
 
 /// Represents the permission levels for the machine.
@@ -256,6 +257,44 @@ pub const Machine = struct {
                     return MachineError.OutOfMemory;
                 };
             },
+            .JumpForwardConst, .JumpBackwardConst => {
+                if (self.register.get(.I) == 0) {
+                    return;
+                }
+
+                const high = self.command.arguments[0];
+                const mid_high = self.command.arguments[1];
+                const mid_low = self.command.arguments[2];
+                const low = self.command.arguments[3];
+
+                var offset = (@as(i32, high) << 24) | (@as(i32, mid_high) << 16) | (@as(i32, mid_low) << 8) | @as(i32, low);
+                if (self.command.id == .JumpBackwardConst) {
+                    offset = -offset;
+                }
+
+                self.bytecode.moveCursor(offset) catch {
+                    return MachineError.FailedToJump;
+                };
+            },
+            .JumpStack => {
+                if (self.register.get(.I) == 0) {
+                    return;
+                }
+
+                const movement = self.command.arguments[0];
+                const adress = self.stack.pop() catch {
+                    return MachineError.OutOfMemory;
+                };
+
+                var offset = @as(i32, adress);
+                if (movement == 0) {
+                    offset = -offset;
+                }
+
+                self.bytecode.moveCursor(offset) catch {
+                    return MachineError.FailedToJump;
+                };
+            },
             .SleepSeconds, .SleepMilliseconds => {
                 const seconds = self.stack.pop() catch {
                     return MachineError.OutOfMemory;
@@ -306,6 +345,7 @@ pub const Machine = struct {
                 std.debug.print("| D = 0x{X}\n", .{self.register.get(.D)});
                 std.debug.print("| E = 0x{X}\n", .{self.register.get(.E)});
                 std.debug.print("| F = 0x{X}\n", .{self.register.get(.F)});
+                std.debug.print("| I = 0x{X}\n", .{self.register.get(.I)});
 
                 std.debug.print("Stack:\n", .{});
                 for (self.stack.values.items) |value| {

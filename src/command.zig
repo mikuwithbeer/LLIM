@@ -14,6 +14,10 @@ pub const CommandID = enum {
     ModuloRegister,
     PushRegister,
 
+    JumpForwardConst,
+    JumpBackwardConst,
+    JumpStack,
+
     SleepSeconds,
     SleepMilliseconds,
     ExitMachine,
@@ -39,6 +43,10 @@ pub const CommandID = enum {
             0x08 => CommandID.DivideRegister,
             0x09 => CommandID.ModuloRegister,
             0x0A => CommandID.PushRegister,
+            // Control Flow
+            0x30 => CommandID.JumpForwardConst,
+            0x31 => CommandID.JumpBackwardConst,
+            0x32 => CommandID.JumpStack,
             // OS Operations
             0x60 => CommandID.SleepSeconds,
             0x61 => CommandID.SleepMilliseconds,
@@ -68,6 +76,10 @@ pub const CommandID = enum {
             .DivideRegister => 3,
             .ModuloRegister => 3,
             .PushRegister => 1,
+
+            .JumpForwardConst => 4,
+            .JumpBackwardConst => 4,
+            .JumpStack => 1,
 
             .SleepSeconds => 0,
             .SleepMilliseconds => 0,

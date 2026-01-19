@@ -91,6 +91,23 @@ pub const Bytecode = struct {
         return value;
     }
 
+    /// Moves the cursor to the specified position in the bytecode.
+    pub fn moveCursor(self: *Bytecode, position: i32) BytecodeError!void {
+        var current = self.cursor;
+        if (position > 0) {
+            current += @as(usize, @intCast(position)) - 1;
+        } else {
+            const offset = -position;
+            current -= @as(usize, @intCast(offset)) + 1;
+        }
+
+        if (current >= self.length()) {
+            return BytecodeError.IndexOutOfRange;
+        }
+
+        self.cursor = current;
+    }
+
     /// Deinitializes the bytecode, freeing its resources.
     pub fn deinit(self: *Bytecode) void {
         self.values.deinit(self.allocator);
