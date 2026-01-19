@@ -28,8 +28,10 @@ pub const MachinePermission = enum {
 
     pub fn checkPermission(self: MachinePermission, command: Command) bool {
         return switch (command.id) {
+            .SleepSeconds, .SleepMilliseconds => self == .Write,
             .GetMousePosition => self == .Read or self == .Write,
             .SetMousePosition => self == .Write,
+            .MouseClick => self == .Write,
             .Debug => self == .Read or self == .Write,
             else => true,
         };
@@ -226,6 +228,18 @@ pub const Machine = struct {
                 self.stack.push(value) catch {
                     return MachineError.OutOfMemory;
                 };
+            },
+            .SleepSeconds, .SleepMilliseconds => {
+                const seconds = self.stack.pop() catch {
+                    return MachineError.OutOfMemory;
+                };
+
+                const multiplier: u64 = if (self.command.id == .SleepSeconds)
+                    std.time.ns_per_s
+                else
+                    std.time.ns_per_ms;
+
+                std.Thread.sleep(@as(u64, seconds) * multiplier);
             },
             .GetMousePosition => {
                 const cursor = Input.getMousePosition();

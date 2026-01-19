@@ -10,6 +10,8 @@ pub const CommandID = enum {
     DivideRegister,
     ModuloRegister,
     PushRegister,
+    SleepSeconds,
+    SleepMilliseconds,
     GetMousePosition,
     SetMousePosition,
     MouseClick,
@@ -29,6 +31,9 @@ pub const CommandID = enum {
             0x08 => CommandID.DivideRegister,
             0x09 => CommandID.ModuloRegister,
             0x0A => CommandID.PushRegister,
+            // OS Operations
+            0x60 => CommandID.SleepSeconds,
+            0x61 => CommandID.SleepMilliseconds,
             // Mouse Controlling
             0x90 => CommandID.GetMousePosition,
             0x91 => CommandID.SetMousePosition,
@@ -52,6 +57,8 @@ pub const CommandID = enum {
             .DivideRegister => 3,
             .ModuloRegister => 3,
             .PushRegister => 1,
+            .SleepSeconds => 0,
+            .SleepMilliseconds => 0,
             .GetMousePosition => 0,
             .SetMousePosition => 0,
             .MouseClick => 1,
