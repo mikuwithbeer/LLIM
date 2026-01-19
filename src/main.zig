@@ -13,7 +13,7 @@ pub fn main() !void {
     defer std.process.argsFree(allocator, args);
 
     if (args.len < 3) {
-        std.debug.print("Usage: LLIM run file\n", .{});
+        std.debug.print("usage: llim run <file>\n", .{});
         return;
     }
 
@@ -30,6 +30,6 @@ pub fn main() !void {
         machine.setPermission(.Write);
         try machine.loop();
     } else {
-        std.debug.print("Unknown mode: {s}\n", .{mode});
+        std.debug.print("unknown mode: {s}\n", .{mode});
     }
 }

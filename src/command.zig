@@ -1,3 +1,6 @@
+//! Command definitions and utilities.
+
+/// This module defines the various commands that can be executed by the virtual machine.
 pub const CommandID = enum {
     None,
     PushConst,
@@ -17,6 +20,7 @@ pub const CommandID = enum {
     MouseClick,
     Debug,
 
+    /// Converts a `u8` value to a `CommandID` enum variant.
     pub fn fromBytecode(value: u8) ?CommandID {
         return switch (value) {
             // Arithmetic and Data Management
@@ -44,6 +48,8 @@ pub const CommandID = enum {
         };
     }
 
+    /// Returns the number of arguments required for the command.
+    /// Later used for parsing bytecode instructions.
     pub fn argumentCount(self: CommandID) usize {
         return switch (self) {
             .None => 0,
@@ -67,11 +73,13 @@ pub const CommandID = enum {
     }
 };
 
+/// Represents a command with its ID and arguments.
 pub const Command = struct {
     id: CommandID,
     count: usize,
     arguments: [4]u8,
 
+    /// Initializes a new command with the given ID.
     pub fn init(id: CommandID) Command {
         return Command{
             .id = id,
@@ -80,6 +88,7 @@ pub const Command = struct {
         };
     }
 
+    /// Pushes an argument to the command.
     pub fn pushArgument(self: *Command, value: u8) void {
         if (self.count >= 4) {
             return;

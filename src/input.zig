@@ -1,13 +1,19 @@
+//! This module provides functions for controlling input on macOS.
+//! It uses the CoreGraphics framework for these operations.
+
 const C = @cImport({
     @cInclude("CoreGraphics/CoreGraphics.h");
 });
 
+/// Represents mouse button click types.
 pub const MouseClick = enum {
     LeftDown,
     LeftUp,
     RightDown,
     RightUp,
 
+    /// Converts a ID to a `MouseClick` enum variant.
+    /// Returns `null` if the ID is invalid.
     pub fn fromId(self: u8) ?MouseClick {
         return switch (self) {
             0 => .LeftDown,
@@ -18,6 +24,8 @@ pub const MouseClick = enum {
         };
     }
 
+    /// Converts the `MouseClick` variant to the corresponding `CGEventType`.
+    /// Used for creating mouse events in CoreGraphics.
     pub fn toCGEventType(self: MouseClick) C.CGEventType {
         return switch (self) {
             .LeftDown => C.kCGEventLeftMouseDown,
@@ -28,13 +36,17 @@ pub const MouseClick = enum {
     }
 };
 
+/// Represents errors that can occur during input operations.
 pub const InputError = error{
     FailedToGetMousePosition,
     FailedToSetMousePosition,
     FailedToClickMouse,
 };
 
+/// Provides functions for input operations.
 pub const Input = struct {
+    /// Gets the current mouse position.
+    /// Returns an array with x and y coordinates, or `null` on failure.
     pub fn getMousePosition() ?[2]u16 {
         const event = C.CGEventCreate(null);
         if (event != null) {
@@ -50,6 +62,7 @@ pub const Input = struct {
         return null;
     }
 
+    /// Sets the mouse position to the specified x and y coordinates.
     pub fn setMousePosition(x: u16, y: u16) InputError!void {
         const point = C.CGPointMake(@floatFromInt(x), @floatFromInt(y));
         if (C.CGWarpMouseCursorPosition(point) != C.kCGErrorSuccess) {
@@ -61,6 +74,7 @@ pub const Input = struct {
         }
     }
 
+    /// Simulates a mouse click of the specified button type.
     pub fn clickMouse(button: MouseClick) InputError!void {
         const positions = getMousePosition() orelse {
             return InputError.FailedToGetMousePosition;

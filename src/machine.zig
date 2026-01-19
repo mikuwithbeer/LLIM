@@ -1,3 +1,8 @@
+//! Virtual machine implementation for executing bytecode commands.
+//! Manages registers, stack, and execution state.
+//! Handles permissions and command execution.
+//! Defines relevant error types.
+
 const std = @import("std");
 
 const Bytecode = @import("bytecode.zig").Bytecode;
@@ -9,6 +14,7 @@ const Register = @import("register.zig").Register;
 const RegisterName = @import("register.zig").RegisterName;
 const Stack = @import("stack.zig").Stack;
 
+/// Represents errors that can occur during machine operations.
 pub const MachineError = error{
     PermissionDenied,
     OutOfMemory,
@@ -21,11 +27,13 @@ pub const MachineError = error{
     FailedToClickMouse,
 };
 
+/// Represents the permission levels for the machine.
 pub const MachinePermission = enum {
     None,
     Read,
     Write,
 
+    /// Checks if the machine has permission to execute the given command.
     pub fn checkPermission(self: MachinePermission, command: Command) bool {
         return switch (command.id) {
             .SleepSeconds, .SleepMilliseconds => self == .Write,
@@ -38,12 +46,15 @@ pub const MachinePermission = enum {
     }
 };
 
+/// Represents the current state of the machine.
 pub const MachineState = enum {
     Idle,
     Collect,
     Execute,
 };
 
+/// Represents the virtual machine.
+/// Manages bytecode execution, registers, stack, and permissions.
 pub const Machine = struct {
     allocator: std.mem.Allocator,
 
@@ -54,6 +65,8 @@ pub const Machine = struct {
     stack: Stack,
     state: MachineState,
 
+    /// Initializes a new machine with the given bytecode and allocator.
+    /// Must be deinitialized with `deinit` when no longer needed.
     pub fn init(allocator: std.mem.Allocator, bytecode: Bytecode) MachineError!Machine {
         const register = Register.init();
         const stack = Stack.init(allocator) catch {
@@ -72,12 +85,15 @@ pub const Machine = struct {
         };
     }
 
+    /// Sets the permission level for the machine.
     pub fn setPermission(self: *Machine, permission: MachinePermission) void {
         self.permission = permission;
     }
 
+    /// Main execution loop of the machine.
+    /// Processes bytecode instructions until completion.
     pub fn loop(self: *Machine) MachineError!void {
-        var counter: usize = 0;
+        var counter: usize = 0; // temporary counter for arguments
 
         self.bytecode.append(0) catch {
             return MachineError.OutOfMemory;
@@ -102,7 +118,7 @@ pub const Machine = struct {
                     self.command = Command.init(command_id.?);
 
                     if (counter == 0) {
-                        self.finishCollection();
+                        self.finishCollection(); // if no arguments, execute immediately
                     } else {
                         self.startCollection();
                     }
@@ -120,21 +136,26 @@ pub const Machine = struct {
         }
     }
 
-    pub fn startCollection(self: *Machine) void {
+    /// Deinitializes the machine, freeing its resources.
+    pub fn deinit(self: *Machine) void {
+        self.stack.deinit();
+    }
+
+    fn startCollection(self: *Machine) void {
         self.state = .Collect;
     }
 
-    pub fn finishCollection(self: *Machine) void {
+    fn finishCollection(self: *Machine) void {
         self.state = .Execute;
     }
 
-    pub fn startExecution(self: *Machine) MachineError!void {
+    fn startExecution(self: *Machine) MachineError!void {
         if (!self.permission.checkPermission(self.command)) {
             return MachineError.PermissionDenied;
         }
     }
 
-    pub fn doExecution(self: *Machine) MachineError!void {
+    fn doExecution(self: *Machine) MachineError!void {
         switch (self.command.id) {
             .None => {},
             .PushConst => {
@@ -285,11 +306,7 @@ pub const Machine = struct {
         }
     }
 
-    pub fn finishExecution(self: *Machine) void {
+    fn finishExecution(self: *Machine) void {
         self.state = .Idle;
-    }
-
-    pub fn deinit(self: *Machine) void {
-        self.stack.deinit();
     }
 };
