@@ -2,6 +2,7 @@ const std = @import("std");
 
 const Bytecode = @import("bytecode.zig").Bytecode;
 const Machine = @import("machine.zig").Machine;
+const Lexer = @import("lexer.zig").Lexer;
 
 pub fn main() !void {
     var gpa = std.heap.DebugAllocator(.{}){};
@@ -13,7 +14,7 @@ pub fn main() !void {
     defer std.process.argsFree(allocator, args);
 
     if (args.len < 3) {
-        std.debug.print("usage: llim run <file>\n", .{});
+        std.debug.print("usage: llim run|asm <file>\n", .{});
         return;
     }
 
@@ -29,6 +30,16 @@ pub fn main() !void {
 
         machine.setPermission(.Write);
         try machine.loop();
+    } else if (std.mem.eql(u8, mode, "asm")) {
+        var lexer = try Lexer.init(allocator, file);
+        defer lexer.deinit();
+
+        try lexer.loop();
+
+        std.debug.print("Tokens:\n", .{});
+        for (lexer.tokens.items) |token| {
+            std.debug.print("  {s}: '{s}'\n", .{ @tagName(token.name), token.value[0..token.index] });
+        }
     } else {
         std.debug.print("unknown mode: {s}\n", .{mode});
     }
