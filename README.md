@@ -1,10 +1,14 @@
 ## LLIM 
 
+![License](https://img.shields.io/badge/license-MIT-green.svg)
+![Platform](https://img.shields.io/badge/platform-macOS-blue.svg)
+![Language](https://img.shields.io/badge/language-Zig-orange.svg)
+
 ![logo](/assets/logo.svg)
 
-LLIM (**L**ow **L**evel **I**nput **M**anagement) is a small virtual machine focused on input (mouse / keyboard) management for macOS. The virtual machine is written in Zig and aims to be safe, fast, and developer-friendly.
+LLIM (**L**ow **L**evel **I**nput **M**anagement) is a small virtual machine focused on mouse and keyboard management for macOS. The virtual machine is written in Zig and aims to be safe, fast, and developer-friendly.
 
-### Planned Features
+### Features
 
 - 7 general-purpose 16-bit registers (A..F + I)
 - Stack-based operations and push/pop semantics
