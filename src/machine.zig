@@ -9,7 +9,8 @@ const Bytecode = @import("bytecode.zig").Bytecode;
 const Command = @import("command.zig").Command;
 const CommandID = @import("command.zig").CommandID;
 const Input = @import("input.zig").Input;
-const MouseClick = @import("input.zig").MouseClick;
+const KeyboardEvent = @import("input.zig").KeyboardEvent;
+const MouseEvent = @import("input.zig").MouseEvent;
 const Register = @import("register.zig").Register;
 const RegisterName = @import("register.zig").RegisterName;
 const Stack = @import("stack.zig").Stack;
@@ -26,6 +27,8 @@ pub const MachineError = error{
     InvalidMouseButton,
     FailedToClickMouse,
     FailedToJump,
+    InvalidKeyboardEvent,
+    FailedToUseKeyboard,
 };
 
 /// Represents the permission levels for the machine.
@@ -257,11 +260,8 @@ pub const Machine = struct {
                     return MachineError.OutOfMemory;
                 };
             },
-            .JumpForwardConst, .JumpBackwardConst => {
-                if (self.register.get(.I) == 0) {
-                    return;
-                }
 
+            .JumpForwardConst, .JumpBackwardConst => {
                 const high = self.command.arguments[0];
                 const mid_high = self.command.arguments[1];
                 const mid_low = self.command.arguments[2];
@@ -295,6 +295,7 @@ pub const Machine = struct {
                     return MachineError.FailedToJump;
                 };
             },
+
             .SleepSeconds, .SleepMilliseconds => {
                 const seconds = self.stack.pop() catch {
                     return MachineError.OutOfMemory;
@@ -310,6 +311,7 @@ pub const Machine = struct {
             .ExitMachine => {
                 self.state = .Exit;
             },
+
             .GetMousePosition => {
                 const cursor = Input.getMousePosition();
                 if (cursor) |positions| {
@@ -329,7 +331,7 @@ pub const Machine = struct {
             },
             .MouseClick => {
                 const button_id = self.command.arguments[0];
-                const button = MouseClick.fromId(button_id) orelse {
+                const button = MouseEvent.fromId(button_id) orelse {
                     return MachineError.InvalidMouseButton;
                 };
 
@@ -337,6 +339,19 @@ pub const Machine = struct {
                     return MachineError.FailedToClickMouse;
                 };
             },
+            .KeyboardAction => {
+                const event_type = self.command.arguments[0];
+                const key_code = self.register.get(.D);
+
+                if (KeyboardEvent.fromId(event_type)) |event| {
+                    Input.useKeyboardEvent(event, key_code) catch {
+                        return MachineError.FailedToUseKeyboard;
+                    };
+                } else {
+                    return MachineError.InvalidKeyboardEvent;
+                }
+            },
+
             .Debug => {
                 std.debug.print("Registers:\n", .{});
                 std.debug.print("| A = 0x{X}\n", .{self.register.get(.A)});

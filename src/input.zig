@@ -5,16 +5,40 @@ const C = @cImport({
     @cInclude("CoreGraphics/CoreGraphics.h");
 });
 
+/// Represents errors that can occur during input operations.
+pub const InputError = error{
+    FailedToGetMousePosition,
+    FailedToSetMousePosition,
+    FailedToClickMouse,
+    FailedToUseKeyboard,
+};
+
+/// Represents keyboard event types.
+pub const KeyboardEvent = enum {
+    KeyboardDown,
+    KeyboardUp,
+
+    /// Converts a ID to a `KeyboardEvent` enum variant.
+    /// Returns `null` if the ID is invalid.
+    pub fn fromId(self: u8) ?KeyboardEvent {
+        return switch (self) {
+            0 => .KeyboardDown,
+            1 => .KeyboardUp,
+            else => null,
+        };
+    }
+};
+
 /// Represents mouse button click types.
-pub const MouseClick = enum {
+pub const MouseEvent = enum {
     LeftDown,
     LeftUp,
     RightDown,
     RightUp,
 
-    /// Converts a ID to a `MouseClick` enum variant.
+    /// Converts a ID to a `MouseEvent` enum variant.
     /// Returns `null` if the ID is invalid.
-    pub fn fromId(self: u8) ?MouseClick {
+    pub fn fromId(self: u8) ?MouseEvent {
         return switch (self) {
             0 => .LeftDown,
             1 => .LeftUp,
@@ -24,9 +48,9 @@ pub const MouseClick = enum {
         };
     }
 
-    /// Converts the `MouseClick` variant to the corresponding `CGEventType`.
+    /// Converts the `MouseEvent` variant to the corresponding `CGEventType`.
     /// Used for creating mouse events in CoreGraphics.
-    pub fn toCGEventType(self: MouseClick) C.CGEventType {
+    pub fn toCGEventType(self: MouseEvent) C.CGEventType {
         return switch (self) {
             .LeftDown => C.kCGEventLeftMouseDown,
             .LeftUp => C.kCGEventLeftMouseUp,
@@ -34,13 +58,6 @@ pub const MouseClick = enum {
             .RightUp => C.kCGEventRightMouseUp,
         };
     }
-};
-
-/// Represents errors that can occur during input operations.
-pub const InputError = error{
-    FailedToGetMousePosition,
-    FailedToSetMousePosition,
-    FailedToClickMouse,
 };
 
 /// Provides functions for input operations.
@@ -75,7 +92,7 @@ pub const Input = struct {
     }
 
     /// Simulates a mouse click of the specified button type.
-    pub fn clickMouse(button: MouseClick) InputError!void {
+    pub fn clickMouse(button: MouseEvent) InputError!void {
         const positions = getMousePosition() orelse {
             return InputError.FailedToGetMousePosition;
         };
@@ -93,6 +110,23 @@ pub const Input = struct {
             C.CFRelease(mouse_event);
         } else {
             return InputError.FailedToClickMouse;
+        }
+    }
+
+    /// Simulates a keyboard event of the specified type and key code.
+    /// See https://gist.github.com/eegrok/949034 for key code reference.
+    pub fn useKeyboardEvent(event: KeyboardEvent, keyCode: u16) InputError!void {
+        const cg_event = C.CGEventCreateKeyboardEvent(
+            null,
+            @as(C.CGKeyCode, keyCode),
+            event == .KeyboardDown,
+        );
+
+        if (cg_event) |keyboard_event| {
+            C.CGEventPost(C.kCGHIDEventTap, keyboard_event);
+            C.CFRelease(keyboard_event);
+        } else {
+            return InputError.FailedToUseKeyboard;
         }
     }
 };

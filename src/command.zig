@@ -25,6 +25,7 @@ pub const CommandID = enum {
     GetMousePosition,
     SetMousePosition,
     MouseClick,
+    KeyboardAction,
 
     Debug,
 
@@ -51,10 +52,11 @@ pub const CommandID = enum {
             0x60 => CommandID.SleepSeconds,
             0x61 => CommandID.SleepMilliseconds,
             0x62 => CommandID.ExitMachine,
-            // Mouse Controlling
+            // Input Controlling
             0x90 => CommandID.GetMousePosition,
             0x91 => CommandID.SetMousePosition,
             0x92 => CommandID.MouseClick,
+            0x93 => CommandID.KeyboardAction,
             // Debugging
             0xFF => CommandID.Debug,
             else => null,
@@ -88,6 +90,7 @@ pub const CommandID = enum {
             .GetMousePosition => 0,
             .SetMousePosition => 0,
             .MouseClick => 1,
+            .KeyboardAction => 1,
 
             .Debug => 0,
         };
