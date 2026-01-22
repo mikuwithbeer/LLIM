@@ -9,9 +9,11 @@ pub const Token = @import("token.zig").Token;
 pub const AssemblerError = error{
     OutOfMemory,
     FailedToReadFile,
-    WaitingForInstructionOrLabel,
+    WaitingForInstruction,
     WaitingForNumberOrRegister,
+    WaitingForLabel,
     LabelAlreadyDefined,
+    LabelNotFound,
     UnknownInstruction,
     InvalidNumber,
     InvalidRegister,
@@ -27,6 +29,8 @@ pub const Assembler = struct {
     allocator: std.mem.Allocator,
 
     bytecode: Bytecode,
+    bytes: usize,
+
     labels: std.AutoHashMap([32]u8, usize),
     tokens: *std.ArrayList(Token),
 
@@ -43,6 +47,8 @@ pub const Assembler = struct {
             .allocator = allocator,
 
             .bytecode = bytecode,
+            .bytes = 0,
+
             .labels = .init(allocator),
             .tokens = tokens,
 
@@ -51,18 +57,47 @@ pub const Assembler = struct {
         };
     }
 
+    /// Prepares the assembler.
+    pub fn prepare(self: *Assembler) AssemblerError!void {
+        for (self.tokens.*.items) |token| {
+            switch (token.name) {
+                .Instruction => self.bytes += 1,
+                .Label => {
+                    if (self.labels.contains(token.value)) {
+                        return AssemblerError.LabelAlreadyDefined;
+                    }
+
+                    self.labels.put(token.value, self.bytes) catch {
+                        return AssemblerError.OutOfMemory;
+                    };
+                },
+                .Number => self.bytes += 2,
+                .Register => self.bytes += 1,
+                .Jump => self.bytes += 5,
+                .None => {
+                    // ignore
+                },
+            }
+        }
+    }
+
     /// Assembles the tokens into bytecode.
     pub fn loop(self: *Assembler) AssemblerError!void {
         for (self.tokens.*.items) |token| {
             switch (self.state) {
                 .Idle => {
                     switch (token.name) {
-                        .Label => try self.handleLabel(token),
                         .Instruction => {
                             self.state = .Instruction;
                             try self.handleInstruction(token);
                         },
-                        else => return AssemblerError.WaitingForInstructionOrLabel,
+                        .Label => {
+                            // ignore labels in this pass
+                        },
+                        .Jump => {
+                            try self.handleJump(token);
+                        },
+                        else => return AssemblerError.WaitingForInstruction,
                     }
                 },
                 .Instruction => {
@@ -94,15 +129,46 @@ pub const Assembler = struct {
         };
     }
 
-    /// Handles a label token by adding it to the label map.
-    fn handleLabel(self: *Assembler, token: Token) AssemblerError!void {
-        if (self.labels.contains(token.value)) {
-            return AssemblerError.LabelAlreadyDefined;
+    /// Handles a jump token by calculating and appending its bytecode.
+    fn handleJump(self: *Assembler, token: Token) AssemblerError!void {
+        if (self.labels.get(token.value)) |address| {
+            const cursor = self.bytecode.values.items.len;
+
+            if (cursor > address) {
+                const offset = @as(u32, @intCast(cursor - address + 5));
+
+                const high_high = @as(u8, @intCast((offset >> 24) & 0xFF));
+                const high_low = @as(u8, @intCast((offset >> 16) & 0xFF));
+                const low_high = @as(u8, @intCast((offset >> 8) & 0xFF));
+                const low_low = @as(u8, @intCast(offset & 0xFF));
+
+                try self.appendByte(0x31);
+                try self.appendByte(high_high);
+                try self.appendByte(high_low);
+                try self.appendByte(low_high);
+                try self.appendByte(low_low);
+            } else if (cursor < address) {
+                const offset = @as(u32, @intCast(address - cursor - 5));
+
+                const high_high = @as(u8, @intCast((offset >> 24) & 0xFF));
+                const high_low = @as(u8, @intCast((offset >> 16) & 0xFF));
+                const low_high = @as(u8, @intCast((offset >> 8) & 0xFF));
+                const low_low = @as(u8, @intCast(offset & 0xFF));
+
+                try self.appendByte(0x30);
+                try self.appendByte(high_high);
+                try self.appendByte(high_low);
+                try self.appendByte(low_high);
+                try self.appendByte(low_low);
+            } else {
+                // jumping to the same address is a no-op
+                try self.appendByte(0x00);
+            }
+        } else {
+            return AssemblerError.LabelNotFound;
         }
 
-        self.labels.put(token.value, self.bytecode.cursor) catch {
-            return AssemblerError.OutOfMemory;
-        };
+        self.state = .Idle;
     }
 
     /// Handles an instruction token by appending its bytecode.
@@ -123,6 +189,30 @@ pub const Assembler = struct {
         } else if (std.mem.eql(u8, value, "copy_register")) {
             try self.appendByte(0x04);
             self.argc = 2;
+        } else if (std.mem.eql(u8, value, "add_register")) {
+            try self.appendByte(0x05);
+            self.argc = 3;
+        } else if (std.mem.eql(u8, value, "sub_register")) {
+            try self.appendByte(0x06);
+            self.argc = 3;
+        } else if (std.mem.eql(u8, value, "mul_register")) {
+            try self.appendByte(0x07);
+            self.argc = 3;
+        } else if (std.mem.eql(u8, value, "div_register")) {
+            try self.appendByte(0x08);
+            self.argc = 3;
+        } else if (std.mem.eql(u8, value, "mod_register")) {
+            try self.appendByte(0x09);
+            self.argc = 3;
+        } else if (std.mem.eql(u8, value, "push_register")) {
+            try self.appendByte(0x0A);
+            self.argc = 1;
+        } else if (std.mem.eql(u8, value, "sleep_seconds")) {
+            try self.appendByte(0x60);
+            self.state = .Idle;
+        } else if (std.mem.eql(u8, value, "sleep_milliseconds")) {
+            try self.appendByte(0x61);
+            self.state = .Idle;
         } else if (std.mem.eql(u8, value, "debug")) {
             try self.appendByte(0xFF);
             self.state = .Idle;

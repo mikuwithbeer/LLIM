@@ -44,6 +44,7 @@ pub fn main() !void {
         var assembler = try Assembler.init(allocator, &tokens);
         defer assembler.deinit();
 
+        try assembler.prepare();
         try assembler.loop();
 
         for (assembler.bytecode.values.items) |byte| {

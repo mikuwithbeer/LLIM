@@ -16,7 +16,6 @@ pub const CommandID = enum {
 
     JumpForwardConst,
     JumpBackwardConst,
-    JumpStack,
 
     SleepSeconds,
     SleepMilliseconds,
@@ -47,7 +46,6 @@ pub const CommandID = enum {
             // Control Flow
             0x30 => CommandID.JumpForwardConst,
             0x31 => CommandID.JumpBackwardConst,
-            0x32 => CommandID.JumpStack,
             // OS Operations
             0x60 => CommandID.SleepSeconds,
             0x61 => CommandID.SleepMilliseconds,
@@ -81,7 +79,6 @@ pub const CommandID = enum {
 
             .JumpForwardConst => 4,
             .JumpBackwardConst => 4,
-            .JumpStack => 1,
 
             .SleepSeconds => 0,
             .SleepMilliseconds => 0,

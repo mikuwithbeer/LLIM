@@ -1,9 +1,0 @@
-:SOME_LABEL # holy!
-.noop
-.push_const 1337
-.pop_const @D
-.debug
-.set_register @A 60'00
-.debug
-.copy_register @D @A
-.debug

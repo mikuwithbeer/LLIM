@@ -262,6 +262,10 @@ pub const Machine = struct {
             },
 
             .JumpForwardConst, .JumpBackwardConst => {
+                if (self.register.get(.I) == 0) {
+                    return;
+                }
+
                 const high = self.command.arguments[0];
                 const mid_high = self.command.arguments[1];
                 const mid_low = self.command.arguments[2];
@@ -269,25 +273,6 @@ pub const Machine = struct {
 
                 var offset = (@as(i32, high) << 24) | (@as(i32, mid_high) << 16) | (@as(i32, mid_low) << 8) | @as(i32, low);
                 if (self.command.id == .JumpBackwardConst) {
-                    offset = -offset;
-                }
-
-                self.bytecode.moveCursor(offset) catch {
-                    return MachineError.FailedToJump;
-                };
-            },
-            .JumpStack => {
-                if (self.register.get(.I) == 0) {
-                    return;
-                }
-
-                const movement = self.command.arguments[0];
-                const adress = self.stack.pop() catch {
-                    return MachineError.OutOfMemory;
-                };
-
-                var offset = @as(i32, adress);
-                if (movement == 0) {
                     offset = -offset;
                 }
 

@@ -1,0 +1,25 @@
+#.push_const 1337
+#.pop_const @A
+#.set_register @I 1
+#>LOL
+#<ASD
+#.debug
+#.set_register @B 1
+#.add_register @A @B @A
+#<LOL
+#.push_const 1500
+#.sleep_milliseconds
+#>ASD
+#.debug
+
+.set_register @I 4
+.set_register @A 2
+.set_register @B 2
+.set_register @C 1
+<LOOP
+.mul_register @A @A @B
+.sub_register @I @I @C
+.push_const 1
+.sleep_seconds
+>LOOP
+.debug

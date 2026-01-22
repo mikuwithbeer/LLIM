@@ -94,23 +94,14 @@ pub const Lexer = struct {
                 }
             };
 
-            switch (self.token.name) {
-                .None => {
-                    try self.determineToken(character);
-                },
-                .Number => {
-                    try self.collectNumber(character);
-                },
-                .Label => {
-                    try self.collectLabel(character);
-                },
-                .Register => {
-                    try self.collectRegister(character);
-                },
-                .Instruction => {
-                    try self.collectInstruction(character);
-                },
-            }
+            try switch (self.token.name) {
+                .None => self.determineToken(character),
+                .Number => self.collectNumber(character),
+                .Label => self.collectLabel(character),
+                .Register => self.collectRegister(character),
+                .Instruction => self.collectInstruction(character),
+                .Jump => self.collectLabel(character),
+            };
         }
     }
 
@@ -126,24 +117,15 @@ pub const Lexer = struct {
                 self.token.name = .Number;
                 try self.collectNumber(character);
             },
-            ':' => {
-                self.token.name = .Label;
-            },
-            '@' => {
-                self.token.name = .Register;
-            },
-            '.' => {
-                self.token.name = .Instruction;
-            },
-            '#' => {
-                try self.collectComment();
-            },
+            '<' => self.token.name = .Label,
+            '@' => self.token.name = .Register,
+            '.' => self.token.name = .Instruction,
+            '>' => self.token.name = .Jump,
+            '#' => try self.collectComment(),
             ' ', '\t', '\n', '\r' => {
                 // ignore whitespace
             },
-            else => {
-                return LexerError.UnknownCharacter;
-            },
+            else => return LexerError.UnknownCharacter,
         }
     }
 
