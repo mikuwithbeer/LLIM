@@ -24,23 +24,26 @@
 #>LOOP
 #.debug
 
-.set_register @A 50
-.set_register @B 1
-.set_register @I 4
-.get_mouse_position
-<SHIT
-    .add_register @D @A @D
-    .add_register @E @E @A
-    .sub_register @I @I @B
-    .set_mouse_position
-    .push_const 1
-    .sleep_seconds
->SHIT
-.mouse_event 0
-.push_const 500
+.set_register @A 100 # @A = 100
+.set_register @B 1 # @B = 1
+.set_register @I 4 # @I = 4
+.get_mouse_position # @D = x, @E = y
+<LOOP
+  .add_register @D @A @D # @D = @D + @A
+  .add_register @E @E @A # @E = @E + @A
+  .sub_register @I @I @B # @I = @I - @B
+  .set_mouse_position # uses @D (x), @E (y)
+
+  # sleep for 1 second
+  .push_const 1
+  .sleep_seconds
+>LOOP
+.mouse_event 0 # mouse left down
+# wait for a short time (250ms) between mouse events
+.push_const 250
 .sleep_milliseconds
-.mouse_event 1
-.debug
+.mouse_event 1 # mouse left up
+.debug # print registers and stack
 
 #.push_const 3
 #.sleep_seconds
