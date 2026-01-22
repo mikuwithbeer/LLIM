@@ -1,5 +1,5 @@
 //! Register definitions and utilities.
-//! There are six general-purpose registers named A to F.
+//! There are seven general-purpose registers named A to F and I.
 //! Each register can hold a 16-bit unsigned integer value.
 
 /// Represents errors that can occur during register operations.

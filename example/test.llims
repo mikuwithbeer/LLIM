@@ -44,10 +44,15 @@
 #.sleep_milliseconds
 #.mouse_event 1
 
-.push_const 3
-.sleep_seconds
-.set_register @D 0
-.keyboard_event 0
-.push_const 100
-.sleep_milliseconds
-.keyboard_event 1
+#.push_const 3
+#.sleep_seconds
+#.set_register @D 0
+#.keyboard_event 0
+#.push_const 100
+#.sleep_milliseconds
+#.keyboard_event 1
+
+.set_register @A 70
+.set_register @B 71
+.compare_smaller_register @A @B
+.debug

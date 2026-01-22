@@ -1,4 +1,4 @@
-//! Bytecode management for a virtual machine.æ
+//! Bytecode management for virtual machine.
 
 const std = @import("std");
 

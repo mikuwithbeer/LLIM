@@ -1,4 +1,4 @@
-//! Command definitions and utilities.
+//! Virtual machine command definitions and utilities.
 
 /// This module defines the various commands that can be executed by the virtual machine.
 pub const CommandID = enum {
@@ -14,6 +14,9 @@ pub const CommandID = enum {
     ModuloRegister,
     PushRegister,
 
+    CompareBiggerRegister,
+    CompareSmallerRegister,
+    CompareEqualRegister,
     JumpConst,
 
     SleepSeconds,
@@ -44,6 +47,9 @@ pub const CommandID = enum {
             0x0A => CommandID.PushRegister,
             // Control Flow
             0x30 => CommandID.JumpConst,
+            0x31 => CommandID.CompareBiggerRegister,
+            0x32 => CommandID.CompareSmallerRegister,
+            0x33 => CommandID.CompareEqualRegister,
             // OS Operations
             0x60 => CommandID.SleepSeconds,
             0x61 => CommandID.SleepMilliseconds,
@@ -76,6 +82,9 @@ pub const CommandID = enum {
             .PushRegister => 1,
 
             .JumpConst => 4,
+            .CompareBiggerRegister => 2,
+            .CompareSmallerRegister => 2,
+            .CompareEqualRegister => 2,
 
             .SleepSeconds => 0,
             .SleepMilliseconds => 0,

@@ -1,4 +1,4 @@
-//! Assembler module for assembling instructions into machine code.
+//! Assembler module for turning instructions into bytecode.
 
 pub const std = @import("std");
 
@@ -25,6 +25,7 @@ pub const AssemblerState = enum {
     Instruction,
 };
 
+/// Assembler struct for converting tokens into bytecode.
 pub const Assembler = struct {
     allocator: std.mem.Allocator,
 
@@ -38,6 +39,7 @@ pub const Assembler = struct {
     state: AssemblerState,
 
     /// Initializes a new `Assembler` instance.
+    /// Must be deinitialized with `deinit` when no longer needed.
     pub fn init(allocator: std.mem.Allocator, tokens: *std.ArrayList(Token)) AssemblerError!Assembler {
         const bytecode = Bytecode.init(allocator) catch {
             return AssemblerError.OutOfMemory;
@@ -92,7 +94,8 @@ pub const Assembler = struct {
                             try self.handleInstruction(token);
                         },
                         .Label => {
-                            // ignore labels in this pass
+                            // ignore labels in this state
+                            // since they were handled in prepare phase
                         },
                         .Jump => {
                             try self.handleJump(token);
@@ -116,7 +119,7 @@ pub const Assembler = struct {
         }
     }
 
-    /// Writes the assembled bytecode to a file.
+    /// Writes the resulting bytecode into a file.
     pub fn writeFile(self: *Assembler, path: []const u8) AssemblerError!void {
         const file = std.fs.cwd().createFile(path, .{}) catch {
             return AssemblerError.FailedToWriteFile;
@@ -135,7 +138,7 @@ pub const Assembler = struct {
         self.bytecode.deinit();
     }
 
-    /// Appends a byte to the bytecode.
+    /// Appends single `u8` to the bytecode.
     fn appendByte(self: *Assembler, byte: u8) AssemblerError!void {
         self.bytecode.append(byte) catch {
             return AssemblerError.OutOfMemory;
@@ -198,6 +201,15 @@ pub const Assembler = struct {
         } else if (std.mem.eql(u8, value, "push_register")) {
             try self.appendByte(0x0A);
             self.argc = 1;
+        } else if (std.mem.eql(u8, value, "compare_bigger_register")) {
+            try self.appendByte(0x31);
+            self.argc = 2;
+        } else if (std.mem.eql(u8, value, "compare_smaller_register")) {
+            try self.appendByte(0x32);
+            self.argc = 2;
+        } else if (std.mem.eql(u8, value, "compare_equal_register")) {
+            try self.appendByte(0x33);
+            self.argc = 2;
         } else if (std.mem.eql(u8, value, "sleep_seconds")) {
             try self.appendByte(0x60);
             self.state = .Idle;

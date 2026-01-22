@@ -286,6 +286,29 @@ pub const Machine = struct {
 
                 self.block = true;
             },
+            .CompareBiggerRegister, .CompareSmallerRegister, .CompareEqualRegister => {
+                const left_register_id = self.command.arguments[0];
+                const right_register_id = self.command.arguments[1];
+
+                const left_register = RegisterName.fromId(left_register_id) catch {
+                    return MachineError.InvalidRegisterId;
+                };
+                const right_register = RegisterName.fromId(right_register_id) catch {
+                    return MachineError.InvalidRegisterId;
+                };
+
+                const left_value = self.register.get(left_register);
+                const right_value = self.register.get(right_register);
+
+                const result: u16 = switch (self.command.id) {
+                    .CompareBiggerRegister => if (left_value > right_value) 1 else 0,
+                    .CompareSmallerRegister => if (left_value < right_value) 1 else 0,
+                    .CompareEqualRegister => if (left_value == right_value) 1 else 0,
+                    else => unreachable,
+                };
+
+                self.register.set(.I, result);
+            },
 
             .SleepSeconds, .SleepMilliseconds => {
                 const seconds = self.stack.pop() catch {

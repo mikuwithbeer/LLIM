@@ -1,3 +1,5 @@
+//! Token definitions and utilities.
+
 /// Defines the different types of tokens.
 pub const TokenName = enum {
     None,
