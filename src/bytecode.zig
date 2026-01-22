@@ -50,6 +50,8 @@ pub const Bytecode = struct {
         };
 
         var bytecode = try Bytecode.init(allocator);
+        errdefer bytecode.deinit();
+
         try bytecode.extend(source);
 
         return bytecode;
