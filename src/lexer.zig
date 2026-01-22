@@ -60,7 +60,7 @@ pub const Lexer = struct {
     /// Returs the current character without advancing the cursor.
     pub fn currentCharacter(self: *Lexer) LexerError!u8 {
         if (self.cursor == self.source.len) {
-            return ' '; // small hack to fix EOF handling
+            return '\n'; // small hack to fix EOF handling
         } else if (self.cursor > self.source.len) {
             return LexerError.EndOfFile;
         }

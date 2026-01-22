@@ -321,7 +321,10 @@ pub const Machine = struct {
                 };
             },
             .MouseClick => {
-                const button_id = self.command.arguments[0];
+                const high = self.command.arguments[0];
+                const low = self.command.arguments[1];
+
+                const button_id: u16 = (@as(u16, high) << 8) | @as(u16, low);
                 const button = MouseEvent.fromId(button_id) orelse {
                     return MachineError.InvalidMouseButton;
                 };
@@ -331,8 +334,11 @@ pub const Machine = struct {
                 };
             },
             .KeyboardAction => {
-                const event_type = self.command.arguments[0];
                 const key_code = self.register.get(.D);
+
+                const high = self.command.arguments[0];
+                const low = self.command.arguments[1];
+                const event_type: u16 = (@as(u16, high) << 8) | @as(u16, low);
 
                 if (KeyboardEvent.fromId(event_type)) |event| {
                     Input.useKeyboardEvent(event, key_code) catch {

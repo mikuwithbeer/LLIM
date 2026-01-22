@@ -9,17 +9,45 @@
 #<LOL
 #.push_const 1500
 #.sleep_milliseconds
+#.debug
+#.exit
 #>ASD
 #.debug
 
-.set_register @I 4
-.set_register @A 2
-.set_register @B 2
-.set_register @C 1
-<LOOP
-.mul_register @A @A @B
-.sub_register @I @I @C
-.push_const 1
+#.set_register @I 6
+#.set_register @A 2
+#.set_register @B 2
+#.set_register @C 1
+#<LOOP
+#.mul_register @A @A @B
+#.sub_register @I @I @C
+#>LOOP
+#.debug
+
+#.set_register @B 1
+#.set_register @A 255
+#.set_register @I 3
+#.get_mouse_position
+#<SHIT
+#    .add_register @D @A @D
+#    .sub_register @I @I @B
+#    .set_mouse_position
+#    .push_const 500
+#    .sleep_milliseconds
+#>SHIT
+#.debug
+
+#.push_const 3
+#.sleep_seconds
+#.mouse_event 0
+#.push_const 50
+#.sleep_milliseconds
+#.mouse_event 1
+
+.push_const 3
 .sleep_seconds
->LOOP
-.debug
+.set_register @D 0
+.keyboard_event 0
+.push_const 100
+.sleep_milliseconds
+.keyboard_event 1

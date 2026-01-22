@@ -20,7 +20,7 @@ pub const KeyboardEvent = enum {
 
     /// Converts a ID to a `KeyboardEvent` enum variant.
     /// Returns `null` if the ID is invalid.
-    pub fn fromId(self: u8) ?KeyboardEvent {
+    pub fn fromId(self: u16) ?KeyboardEvent {
         return switch (self) {
             0 => .KeyboardDown,
             1 => .KeyboardUp,
@@ -38,7 +38,7 @@ pub const MouseEvent = enum {
 
     /// Converts a ID to a `MouseEvent` enum variant.
     /// Returns `null` if the ID is invalid.
-    pub fn fromId(self: u8) ?MouseEvent {
+    pub fn fromId(self: u16) ?MouseEvent {
         return switch (self) {
             0 => .LeftDown,
             1 => .LeftUp,

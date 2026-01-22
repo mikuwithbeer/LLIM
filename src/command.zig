@@ -83,8 +83,8 @@ pub const CommandID = enum {
 
             .GetMousePosition => 0,
             .SetMousePosition => 0,
-            .MouseClick => 1,
-            .KeyboardAction => 1,
+            .MouseClick => 2,
+            .KeyboardAction => 2,
 
             .Debug => 0,
         };

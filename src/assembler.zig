@@ -8,7 +8,7 @@ pub const Token = @import("token.zig").Token;
 /// Errors that can occur during assembly.
 pub const AssemblerError = error{
     OutOfMemory,
-    FailedToReadFile,
+    FailedToWriteFile,
     WaitingForInstruction,
     WaitingForNumberOrRegister,
     WaitingForLabel,
@@ -116,6 +116,19 @@ pub const Assembler = struct {
         }
     }
 
+    /// Writes the assembled bytecode to a file.
+    pub fn writeFile(self: *Assembler, path: []const u8) AssemblerError!void {
+        const file = std.fs.cwd().createFile(path, .{}) catch {
+            return AssemblerError.FailedToWriteFile;
+        };
+
+        defer file.close();
+
+        file.writeAll(self.bytecode.values.items) catch {
+            return AssemblerError.FailedToWriteFile;
+        };
+    }
+
     /// Deinitializes the assembler, freeing its resources.
     pub fn deinit(self: *Assembler) void {
         self.labels.deinit();
@@ -131,39 +144,17 @@ pub const Assembler = struct {
 
     /// Handles a jump token by calculating and appending its bytecode.
     fn handleJump(self: *Assembler, token: Token) AssemblerError!void {
-        if (self.labels.get(token.value)) |address| {
-            const cursor = self.bytecode.values.items.len;
+        if (self.labels.get(token.value)) |position| {
+            const high = @as(u8, @intCast((position >> 24) & 0xFF));
+            const mid_high = @as(u8, @intCast((position >> 16) & 0xFF));
+            const mid_low = @as(u8, @intCast((position >> 8) & 0xFF));
+            const low = @as(u8, @intCast(position & 0xFF));
 
-            if (cursor > address) {
-                const offset = @as(u32, @intCast(cursor - address + 5));
-
-                const high_high = @as(u8, @intCast((offset >> 24) & 0xFF));
-                const high_low = @as(u8, @intCast((offset >> 16) & 0xFF));
-                const low_high = @as(u8, @intCast((offset >> 8) & 0xFF));
-                const low_low = @as(u8, @intCast(offset & 0xFF));
-
-                try self.appendByte(0x31);
-                try self.appendByte(high_high);
-                try self.appendByte(high_low);
-                try self.appendByte(low_high);
-                try self.appendByte(low_low);
-            } else if (cursor < address) {
-                const offset = @as(u32, @intCast(address - cursor - 5));
-
-                const high_high = @as(u8, @intCast((offset >> 24) & 0xFF));
-                const high_low = @as(u8, @intCast((offset >> 16) & 0xFF));
-                const low_high = @as(u8, @intCast((offset >> 8) & 0xFF));
-                const low_low = @as(u8, @intCast(offset & 0xFF));
-
-                try self.appendByte(0x30);
-                try self.appendByte(high_high);
-                try self.appendByte(high_low);
-                try self.appendByte(low_high);
-                try self.appendByte(low_low);
-            } else {
-                // jumping to the same address is a no-op
-                try self.appendByte(0x00);
-            }
+            try self.appendByte(0x30);
+            try self.appendByte(high);
+            try self.appendByte(mid_high);
+            try self.appendByte(mid_low);
+            try self.appendByte(low);
         } else {
             return AssemblerError.LabelNotFound;
         }
@@ -213,6 +204,21 @@ pub const Assembler = struct {
         } else if (std.mem.eql(u8, value, "sleep_milliseconds")) {
             try self.appendByte(0x61);
             self.state = .Idle;
+        } else if (std.mem.eql(u8, value, "exit")) {
+            try self.appendByte(0x62);
+            self.state = .Idle;
+        } else if (std.mem.eql(u8, value, "get_mouse_position")) {
+            try self.appendByte(0x90);
+            self.state = .Idle;
+        } else if (std.mem.eql(u8, value, "set_mouse_position")) {
+            try self.appendByte(0x91);
+            self.state = .Idle;
+        } else if (std.mem.eql(u8, value, "mouse_event")) {
+            try self.appendByte(0x92);
+            self.argc = 1;
+        } else if (std.mem.eql(u8, value, "keyboard_event")) {
+            try self.appendByte(0x93);
+            self.argc = 1;
         } else if (std.mem.eql(u8, value, "debug")) {
             try self.appendByte(0xFF);
             self.state = .Idle;
