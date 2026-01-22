@@ -10,6 +10,7 @@ pub const BytecodeError = error{
     OutOfMemory,
     IndexOutOfRange,
     FailedToReadFile,
+    FailedToGetSize,
 };
 
 /// A structure representing bytecode for a virtual machine.
@@ -17,12 +18,12 @@ pub const Bytecode = struct {
     allocator: std.mem.Allocator,
 
     cursor: usize,
-    values: std.ArrayList(u8),
+    values: std.ArrayListUnmanaged(u8),
 
     /// Initializes a new bytecode instance with an initial capacity that can hold up to `BytecodeSize` bytes.
     /// Must be deinitialized with `deinit` when no longer needed.
     pub fn init(allocator: std.mem.Allocator) BytecodeError!Bytecode {
-        const values = std.ArrayList(u8).initCapacity(allocator, BytecodeSize) catch {
+        const values = std.ArrayListUnmanaged(u8).initCapacity(allocator, BytecodeSize) catch {
             return BytecodeError.OutOfMemory;
         };
 
@@ -38,25 +39,18 @@ pub const Bytecode = struct {
         const file = std.fs.cwd().openFile(path, .{ .mode = .read_only }) catch {
             return BytecodeError.FailedToReadFile;
         };
-
         defer file.close();
 
+        const file_size = file.getEndPos() catch {
+            return BytecodeError.FailedToGetSize;
+        };
+
+        const source = file.readToEndAlloc(allocator, file_size) catch {
+            return BytecodeError.FailedToReadFile;
+        };
+
         var bytecode = try Bytecode.init(allocator);
-        errdefer bytecode.deinit();
-
-        var buffer: [BytecodeSize]u8 = undefined;
-
-        while (true) {
-            const result = file.read(&buffer) catch {
-                return BytecodeError.FailedToReadFile;
-            };
-
-            if (result == 0) {
-                break;
-            }
-
-            try bytecode.extend(buffer[0..result]);
-        }
+        try bytecode.extend(source);
 
         return bytecode;
     }

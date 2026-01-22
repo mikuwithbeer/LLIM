@@ -19,12 +19,12 @@ pub const Stack = struct {
     allocator: std.mem.Allocator,
 
     capacity: usize,
-    values: std.ArrayList(u16),
+    values: std.ArrayListUnmanaged(u16),
 
     /// Initializes a new stack with a fixed capacity.
     /// Must be deinitialized with `deinit` when no longer needed.
     pub fn init(allocator: std.mem.Allocator) StackError!Stack {
-        const values = std.ArrayList(u16).initCapacity(allocator, StackSize) catch {
+        const values = std.ArrayListUnmanaged(u16).initCapacity(allocator, StackSize) catch {
             return StackError.OutOfMemory;
         };
 

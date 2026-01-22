@@ -36,11 +36,11 @@ pub const Lexer = struct {
         };
         defer file.close();
 
-        const length = file.getEndPos() catch {
+        const file_size = file.getEndPos() catch {
             return LexerError.FailedToGetSize;
         };
 
-        const source = file.readToEndAlloc(allocator, length) catch {
+        const source = file.readToEndAlloc(allocator, file_size) catch {
             return LexerError.FailedToReadFile;
         };
 
@@ -113,7 +113,7 @@ pub const Lexer = struct {
     /// Appends the current token to the token list and resets it.
     fn appendToken(self: *Lexer) LexerError!void {
         self.token.setPosition(self.line, self.column);
-        self.tokens.*.append(self.allocator, self.token) catch {
+        self.tokens.append(self.allocator, self.token) catch {
             return LexerError.OutOfMemory;
         };
 

@@ -1,68 +1,41 @@
 //! Virtual machine command definitions and utilities.
 
+const std = @import("std");
+
 /// This module defines the various commands that can be executed by the virtual machine.
-pub const CommandID = enum {
-    None,
-    PushConst,
-    PopConst,
-    MoveConstToRegister,
-    CopyRegister,
-    AddRegister,
-    SubtractRegister,
-    MultiplyRegister,
-    DivideRegister,
-    ModuloRegister,
-    PushRegister,
-
-    CompareBiggerRegister,
-    CompareSmallerRegister,
-    CompareEqualRegister,
-    JumpConst,
-
-    SleepSeconds,
-    SleepMilliseconds,
-    ExitMachine,
-
-    GetMousePosition,
-    SetMousePosition,
-    MouseClick,
-    KeyboardAction,
-
-    Debug,
+pub const CommandID = enum(u8) {
+    // Arithmetic and Data Management
+    None = 0x00,
+    PushConst = 0x01,
+    PopConst = 0x02,
+    MoveConstToRegister = 0x03,
+    CopyRegister = 0x04,
+    AddRegister = 0x05,
+    SubtractRegister = 0x06,
+    MultiplyRegister = 0x07,
+    DivideRegister = 0x08,
+    ModuloRegister = 0x09,
+    PushRegister = 0x0A,
+    // Control Flow
+    JumpConst = 0x30,
+    CompareBiggerRegister = 0x31,
+    CompareSmallerRegister = 0x32,
+    CompareEqualRegister = 0x33,
+    // OS Operations
+    SleepSeconds = 0x60,
+    SleepMilliseconds = 0x61,
+    ExitMachine = 0x62,
+    // Input Controlling
+    GetMousePosition = 0x90,
+    SetMousePosition = 0x91,
+    MouseClick = 0x92,
+    KeyboardAction = 0x93,
+    // Debugging
+    Debug = 0xFF,
 
     /// Converts a `u8` value to a `CommandID` enum variant.
     pub fn fromBytecode(value: u8) ?CommandID {
-        return switch (value) {
-            // Arithmetic and Data Management
-            0x00 => CommandID.None,
-            0x01 => CommandID.PushConst,
-            0x02 => CommandID.PopConst,
-            0x03 => CommandID.MoveConstToRegister,
-            0x04 => CommandID.CopyRegister,
-            0x05 => CommandID.AddRegister,
-            0x06 => CommandID.SubtractRegister,
-            0x07 => CommandID.MultiplyRegister,
-            0x08 => CommandID.DivideRegister,
-            0x09 => CommandID.ModuloRegister,
-            0x0A => CommandID.PushRegister,
-            // Control Flow
-            0x30 => CommandID.JumpConst,
-            0x31 => CommandID.CompareBiggerRegister,
-            0x32 => CommandID.CompareSmallerRegister,
-            0x33 => CommandID.CompareEqualRegister,
-            // OS Operations
-            0x60 => CommandID.SleepSeconds,
-            0x61 => CommandID.SleepMilliseconds,
-            0x62 => CommandID.ExitMachine,
-            // Input Controlling
-            0x90 => CommandID.GetMousePosition,
-            0x91 => CommandID.SetMousePosition,
-            0x92 => CommandID.MouseClick,
-            0x93 => CommandID.KeyboardAction,
-            // Debugging
-            0xFF => CommandID.Debug,
-            else => null,
-        };
+        return std.enums.fromInt(CommandID, value);
     }
 
     /// Returns the number of arguments required for the command.

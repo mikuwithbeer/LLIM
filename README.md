@@ -23,7 +23,7 @@ LLIM (**L**ow **L**evel **I**nput **M**anagement) is a small virtual machine foc
 
 This program demonstrates the core syntax and capabilities of the LLIM IR (**I**ntermediate **R**epresentation).
 
-```elixir
+```ruby
 .set_register @A 100 # @A = 100
 .set_register @B 1 # @B = 1
 .set_register @I 4 # @I = 4

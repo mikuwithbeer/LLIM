@@ -1,6 +1,8 @@
 //! This module provides functions for controlling input on macOS.
 //! It uses the CoreGraphics framework for these operations.
 
+const std = @import("std");
+
 const C = @cImport({
     @cInclude("CoreGraphics/CoreGraphics.h");
 });
@@ -14,38 +16,28 @@ pub const InputError = error{
 };
 
 /// Represents keyboard event types.
-pub const KeyboardEvent = enum {
-    KeyboardDown,
-    KeyboardUp,
+pub const KeyboardEvent = enum(u16) {
+    KeyboardDown = 0,
+    KeyboardUp = 1,
 
     /// Converts a ID to a `KeyboardEvent` enum variant.
     /// Returns `null` if the ID is invalid.
-    pub fn fromId(self: u16) ?KeyboardEvent {
-        return switch (self) {
-            0 => .KeyboardDown,
-            1 => .KeyboardUp,
-            else => null,
-        };
+    pub fn fromId(id: u16) ?KeyboardEvent {
+        return std.enums.fromInt(KeyboardEvent, id);
     }
 };
 
 /// Represents mouse button click types.
-pub const MouseEvent = enum {
-    LeftDown,
-    LeftUp,
-    RightDown,
-    RightUp,
+pub const MouseEvent = enum(u16) {
+    LeftDown = 0,
+    LeftUp = 1,
+    RightDown = 2,
+    RightUp = 3,
 
     /// Converts a ID to a `MouseEvent` enum variant.
     /// Returns `null` if the ID is invalid.
-    pub fn fromId(self: u16) ?MouseEvent {
-        return switch (self) {
-            0 => .LeftDown,
-            1 => .LeftUp,
-            2 => .RightDown,
-            3 => .RightUp,
-            else => null,
-        };
+    pub fn fromId(id: u16) ?MouseEvent {
+        return std.enums.fromInt(MouseEvent, id);
     }
 
     /// Converts the `MouseEvent` variant to the corresponding `CGEventType`.

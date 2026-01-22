@@ -2,47 +2,33 @@
 //! There are seven general-purpose registers named A to F and I.
 //! Each register can hold a 16-bit unsigned integer value.
 
+const std = @import("std");
+
 /// Represents errors that can occur during register operations.
 pub const RegisterError = error{
     InvalidRegisterId,
 };
 
 /// Represents the names of the general-purpose registers.
-pub const RegisterName = enum {
-    A,
-    B,
-    C,
-    D,
-    E,
-    F,
-    I,
+pub const RegisterName = enum(u8) {
+    A = 0,
+    B = 1,
+    C = 2,
+    D = 3,
+    E = 4,
+    F = 5,
+    I = 6,
 
     /// Converts the register name to its corresponding ID.
     pub fn toId(self: RegisterName) u8 {
-        return switch (self) {
-            .A => 0,
-            .B => 1,
-            .C => 2,
-            .D => 3,
-            .E => 4,
-            .F => 5,
-            .I => 6,
-        };
+        return @intFromEnum(self);
     }
 
     /// Converts a `u8` value to a `RegisterName` enum variant.
     /// Returns an error if the ID is invalid.
-    pub fn fromId(self: u8) RegisterError!RegisterName {
-        return switch (self) {
-            0 => .A,
-            1 => .B,
-            2 => .C,
-            3 => .D,
-            4 => .E,
-            5 => .F,
-            6 => .I,
-            else => RegisterError.InvalidRegisterId,
-        };
+    pub fn fromId(id: u8) RegisterError!RegisterName {
+        return std.enums.fromInt(RegisterName, id) orelse
+            RegisterError.InvalidRegisterId;
     }
 };
 
