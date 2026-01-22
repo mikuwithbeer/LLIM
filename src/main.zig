@@ -7,13 +7,11 @@ const Lexer = @import("lexer.zig").Lexer;
 const Token = @import("token.zig").Token;
 
 pub fn main() !void {
-    var gpa = std.heap.DebugAllocator(.{}){};
-    defer std.debug.assert(gpa.deinit() == .ok);
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    defer arena.deinit();
 
-    const allocator = gpa.allocator();
-
+    const allocator = arena.allocator();
     const args = try std.process.argsAlloc(allocator);
-    defer std.process.argsFree(allocator, args);
 
     if (args.len != 4) {
         std.debug.print(
@@ -40,10 +38,7 @@ pub fn main() !void {
 
 fn compileFile(allocator: std.mem.Allocator, source: []const u8, target: []const u8) !void {
     var tokens: std.ArrayList(Token) = .empty;
-    defer tokens.deinit(allocator);
-
     var lexer = try Lexer.init(allocator, source, &tokens);
-    defer lexer.deinit();
 
     lexer.loop() catch |err| {
         std.debug.print(
@@ -56,7 +51,6 @@ fn compileFile(allocator: std.mem.Allocator, source: []const u8, target: []const
     };
 
     var assembler = try Assembler.init(allocator, &tokens);
-    defer assembler.deinit();
 
     assembler.prepare() catch |err| {
         std.debug.print(
@@ -84,10 +78,7 @@ fn compileFile(allocator: std.mem.Allocator, source: []const u8, target: []const
 
 fn executeBytecodeFile(allocator: std.mem.Allocator, target: []const u8) !void {
     var bytecode = try Bytecode.fromFile(allocator, target);
-    defer bytecode.deinit();
-
     var machine = try Machine.init(allocator, &bytecode);
-    defer machine.deinit();
 
     machine.setPermission(.Write);
     machine.loop() catch |err| {
