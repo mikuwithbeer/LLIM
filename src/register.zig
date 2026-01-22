@@ -58,7 +58,7 @@ pub const Register = struct {
     }
 
     /// Retrieves the value of the specified register.
-    pub fn get(self: *Register, name: RegisterName) u16 {
+    pub fn get(self: *const Register, name: RegisterName) u16 {
         return self.values[name.toId()];
     }
 

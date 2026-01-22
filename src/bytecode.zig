@@ -42,11 +42,12 @@ pub const Bytecode = struct {
         defer file.close();
 
         var bytecode = try Bytecode.init(allocator);
+        errdefer bytecode.deinit();
+
         var buffer: [BytecodeSize]u8 = undefined;
 
         while (true) {
             const result = file.read(&buffer) catch {
-                bytecode.deinit();
                 return BytecodeError.FailedToReadFile;
             };
 

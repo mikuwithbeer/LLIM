@@ -124,7 +124,7 @@ pub const Assembler = struct {
     }
 
     /// Writes the resulting bytecode into a file.
-    pub fn writeFile(self: *Assembler, path: []const u8) AssemblerError!void {
+    pub fn writeFile(self: *const Assembler, path: []const u8) AssemblerError!void {
         const file = std.fs.cwd().createFile(path, .{}) catch {
             return AssemblerError.FailedToWriteFile;
         };
