@@ -31,6 +31,8 @@ pub const Assembler = struct {
 
     bytecode: Bytecode,
     bytes: usize,
+    line: usize,
+    column: usize,
 
     labels: std.AutoHashMap([32]u8, usize),
     tokens: *std.ArrayList(Token),
@@ -50,6 +52,8 @@ pub const Assembler = struct {
 
             .bytecode = bytecode,
             .bytes = 0,
+            .line = 1,
+            .column = 1,
 
             .labels = .init(allocator),
             .tokens = tokens,
@@ -62,6 +66,7 @@ pub const Assembler = struct {
     /// Prepares the assembler.
     pub fn prepare(self: *Assembler) AssemblerError!void {
         for (self.tokens.*.items) |token| {
+            self.syncPosition(&token);
             switch (token.name) {
                 .Instruction => self.bytes += 1,
                 .Label => {
@@ -86,27 +91,26 @@ pub const Assembler = struct {
     /// Assembles the tokens into bytecode.
     pub fn loop(self: *Assembler) AssemblerError!void {
         for (self.tokens.*.items) |token| {
+            self.syncPosition(&token);
             switch (self.state) {
                 .Idle => {
                     switch (token.name) {
                         .Instruction => {
                             self.state = .Instruction;
-                            try self.handleInstruction(token);
+                            try self.handleInstruction(&token);
                         },
                         .Label => {
                             // ignore labels in this state
                             // since they were handled in prepare phase
                         },
-                        .Jump => {
-                            try self.handleJump(token);
-                        },
+                        .Jump => try self.handleJump(&token),
                         else => return AssemblerError.WaitingForInstruction,
                     }
                 },
                 .Instruction => {
                     switch (token.name) {
-                        .Number => try self.handleNumber(token),
-                        .Register => try self.handleRegister(token),
+                        .Number => try self.handleNumber(&token),
+                        .Register => try self.handleRegister(&token),
                         else => return AssemblerError.WaitingForNumberOrRegister,
                     }
 
@@ -138,6 +142,12 @@ pub const Assembler = struct {
         self.bytecode.deinit();
     }
 
+    /// Synchronizes the current line and column with the given token.
+    fn syncPosition(self: *Assembler, token: *const Token) void {
+        self.line = token.line;
+        self.column = token.column;
+    }
+
     /// Appends single `u8` to the bytecode.
     fn appendByte(self: *Assembler, byte: u8) AssemblerError!void {
         self.bytecode.append(byte) catch {
@@ -146,7 +156,7 @@ pub const Assembler = struct {
     }
 
     /// Handles a jump token by calculating and appending its bytecode.
-    fn handleJump(self: *Assembler, token: Token) AssemblerError!void {
+    fn handleJump(self: *Assembler, token: *const Token) AssemblerError!void {
         if (self.labels.get(token.value)) |position| {
             const high = @as(u8, @intCast((position >> 24) & 0xFF));
             const mid_high = @as(u8, @intCast((position >> 16) & 0xFF));
@@ -166,8 +176,8 @@ pub const Assembler = struct {
     }
 
     /// Handles an instruction token by appending its bytecode.
-    fn handleInstruction(self: *Assembler, token: Token) AssemblerError!void {
-        const value = token.value[0..token.index];
+    fn handleInstruction(self: *Assembler, token: *const Token) AssemblerError!void {
+        const value = token.getValueSlice();
         if (std.mem.eql(u8, value, "noop")) {
             try self.appendByte(0x00);
             self.state = .Idle;
@@ -240,8 +250,8 @@ pub const Assembler = struct {
     }
 
     /// Handles a number token by parsing and appending its bytecode.
-    fn handleNumber(self: *Assembler, token: Token) AssemblerError!void {
-        const value = token.value[0..token.index];
+    fn handleNumber(self: *Assembler, token: *const Token) AssemblerError!void {
+        const value = token.getValueSlice();
         const number = std.fmt.parseInt(u16, value, 10) catch {
             return AssemblerError.InvalidNumber;
         };
@@ -254,7 +264,7 @@ pub const Assembler = struct {
     }
 
     /// Handles a register token by appending its bytecode.
-    fn handleRegister(self: *Assembler, token: Token) AssemblerError!void {
+    fn handleRegister(self: *Assembler, token: *const Token) AssemblerError!void {
         switch (token.value[0]) {
             'A' => try self.appendByte(0x00),
             'B' => try self.appendByte(0x01),

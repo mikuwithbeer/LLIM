@@ -45,30 +45,62 @@ fn compileFile(allocator: std.mem.Allocator, source: []const u8, target: []const
     var lexer = try Lexer.init(allocator, source, &tokens);
     defer lexer.deinit();
 
-    try lexer.loop();
+    lexer.loop() catch |err| {
+        std.debug.print(
+            \\lexer error!
+            \\  line: {d}
+            \\  column: {d}
+            \\
+        , .{ lexer.line, lexer.column });
+        return err;
+    };
 
     var assembler = try Assembler.init(allocator, &tokens);
     defer assembler.deinit();
 
-    try assembler.prepare();
-    try assembler.loop();
+    assembler.prepare() catch |err| {
+        std.debug.print(
+            \\assembler phase 1 error!
+            \\  line: {d}
+            \\  column: {d}
+            \\
+        , .{ assembler.line, assembler.column });
+        return err;
+    };
+
+    assembler.loop() catch |err| {
+        std.debug.print(
+            \\assembler phase 2 error!
+            \\  line: {d}
+            \\  column: {d}
+            \\
+        , .{ assembler.line, assembler.column });
+        return err;
+    };
 
     try assembler.writeFile(target);
-
-    std.debug.print("wrote {d} bytes.\n", .{assembler.bytes});
+    std.debug.print("out {d} bytes.\n", .{assembler.bytes});
 }
 
 fn executeBytecodeFile(allocator: std.mem.Allocator, target: []const u8) !void {
     var bytecode = try Bytecode.fromFile(allocator, target);
     defer bytecode.deinit();
 
-    var machine = try Machine.init(allocator, bytecode);
+    var machine = try Machine.init(allocator, &bytecode);
     defer machine.deinit();
 
     machine.setPermission(.Write);
-    try machine.loop();
+    machine.loop() catch |err| {
+        std.debug.print(
+            \\virtual machine error!
+            \\  state: {s}
+            \\  position: {d}
+            \\
+        , .{ @tagName(machine.state), machine.bytecode.cursor });
+        return err;
+    };
 }
 
 fn unknownMode() void {
-    std.debug.print("unknown mode?\n", .{});
+    std.debug.print("unknown command.\n", .{});
 }

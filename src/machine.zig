@@ -64,7 +64,7 @@ pub const Machine = struct {
     allocator: std.mem.Allocator,
 
     block: bool,
-    bytecode: Bytecode,
+    bytecode: *Bytecode,
     command: Command,
     permission: MachinePermission,
     register: Register,
@@ -73,7 +73,7 @@ pub const Machine = struct {
 
     /// Initializes a new machine with the given bytecode and allocator.
     /// Must be deinitialized with `deinit` when no longer needed.
-    pub fn init(allocator: std.mem.Allocator, bytecode: Bytecode) MachineError!Machine {
+    pub fn init(allocator: std.mem.Allocator, bytecode: *Bytecode) MachineError!Machine {
         const register = Register.init();
         const stack = Stack.init(allocator) catch {
             return MachineError.OutOfMemory;
@@ -102,12 +102,12 @@ pub const Machine = struct {
     pub fn loop(self: *Machine) MachineError!void {
         var counter: usize = 0; // temporary counter for arguments
 
-        self.bytecode.append(0) catch {
+        self.bytecode.*.append(0) catch {
             return MachineError.OutOfMemory;
         }; // thats a bug fix :)
 
         while (true) {
-            const opcode = self.bytecode.next();
+            const opcode = self.bytecode.*.next();
             if (opcode) |byte| {
                 if (self.state == .Execute) {
                     try self.startExecution();
@@ -280,7 +280,7 @@ pub const Machine = struct {
                 const low = self.command.arguments[3];
 
                 const position = (@as(u32, high) << 24) | (@as(u32, mid_high) << 16) | (@as(u32, mid_low) << 8) | @as(u32, low);
-                self.bytecode.moveCursor(position) catch {
+                self.bytecode.*.moveCursor(position) catch {
                     return MachineError.FailedToJump;
                 };
 

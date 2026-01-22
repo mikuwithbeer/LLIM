@@ -24,18 +24,23 @@
 #>LOOP
 #.debug
 
-#.set_register @B 1
-#.set_register @A 255
-#.set_register @I 3
-#.get_mouse_position
-#<SHIT
-#    .add_register @D @A @D
-#    .sub_register @I @I @B
-#    .set_mouse_position
-#    .push_const 500
-#    .sleep_milliseconds
-#>SHIT
-#.debug
+.set_register @A 50
+.set_register @B 1
+.set_register @I 4
+.get_mouse_position
+<SHIT
+    .add_register @D @A @D
+    .add_register @E @E @A
+    .sub_register @I @I @B
+    .set_mouse_position
+    .push_const 1
+    .sleep_seconds
+>SHIT
+.mouse_event 0
+.push_const 500
+.sleep_milliseconds
+.mouse_event 1
+.debug
 
 #.push_const 3
 #.sleep_seconds
@@ -52,7 +57,8 @@
 #.sleep_milliseconds
 #.keyboard_event 1
 
-.set_register @A 70
-.set_register @B 71
-.compare_smaller_register @A @B
-.debug
+#<LOL >LOL
+#.set_register @I 70
+#.set_register @B 71
+#.compare_smaller_register @A @B
+#.debug

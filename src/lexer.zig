@@ -110,6 +110,16 @@ pub const Lexer = struct {
         self.allocator.free(self.source);
     }
 
+    /// Appends the current token to the token list and resets it.
+    fn appendToken(self: *Lexer) LexerError!void {
+        self.token.setPosition(self.line, self.column);
+        self.tokens.*.append(self.allocator, self.token) catch {
+            return LexerError.OutOfMemory;
+        };
+
+        self.token = Token.init(.None);
+    }
+
     /// Determines the type of token based on the current character.
     fn determineToken(self: *Lexer, character: u8) LexerError!void {
         switch (character) {
@@ -140,16 +150,8 @@ pub const Lexer = struct {
             '\'' => {
                 // ignore inside numbers
             },
-            ' ', '\t', '\n', '\r' => {
-                self.tokens.*.append(self.allocator, self.token) catch {
-                    return LexerError.OutOfMemory;
-                };
-
-                self.token = Token.init(.None);
-            },
-            else => {
-                return LexerError.NumberError;
-            },
+            ' ', '\t', '\n', '\r' => try self.appendToken(),
+            else => return LexerError.NumberError,
         }
     }
 
@@ -161,16 +163,8 @@ pub const Lexer = struct {
                     return LexerError.OutOfMemory;
                 }
             },
-            ' ', '\t', '\n', '\r' => {
-                self.tokens.*.append(self.allocator, self.token) catch {
-                    return LexerError.OutOfMemory;
-                };
-
-                self.token = Token.init(.None);
-            },
-            else => {
-                return LexerError.LabelError;
-            },
+            ' ', '\t', '\n', '\r' => try self.appendToken(),
+            else => return LexerError.LabelError,
         }
     }
 
@@ -182,15 +176,9 @@ pub const Lexer = struct {
                     return LexerError.OutOfMemory;
                 }
 
-                self.tokens.*.append(self.allocator, self.token) catch {
-                    return LexerError.OutOfMemory;
-                };
-
-                self.token = Token.init(.None);
+                try self.appendToken();
             },
-            else => {
-                return LexerError.RegisterError;
-            },
+            else => return LexerError.RegisterError,
         }
     }
 
@@ -202,16 +190,8 @@ pub const Lexer = struct {
                     return LexerError.OutOfMemory;
                 }
             },
-            ' ', '\t', '\n', '\r' => {
-                self.tokens.*.append(self.allocator, self.token) catch {
-                    return LexerError.OutOfMemory;
-                };
-
-                self.token = Token.init(.None);
-            },
-            else => {
-                return LexerError.InstructionError;
-            },
+            ' ', '\t', '\n', '\r' => try self.appendToken(),
+            else => return LexerError.InstructionError,
         }
     }
 
