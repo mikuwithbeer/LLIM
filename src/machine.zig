@@ -63,6 +63,7 @@ pub const MachineState = enum {
 pub const Machine = struct {
     allocator: std.mem.Allocator,
 
+    block: bool,
     bytecode: Bytecode,
     command: Command,
     permission: MachinePermission,
@@ -81,6 +82,7 @@ pub const Machine = struct {
         return Machine{
             .allocator = allocator,
 
+            .block = false,
             .bytecode = bytecode,
             .command = Command.init(.None),
             .permission = .None,
@@ -116,6 +118,12 @@ pub const Machine = struct {
                     } else {
                         self.finishExecution();
                     }
+                }
+
+                // block after execution for jumps
+                if (self.block) {
+                    self.block = false;
+                    continue;
                 }
 
                 if (self.state == .Idle) {
@@ -261,7 +269,7 @@ pub const Machine = struct {
                 };
             },
 
-            .JumpForwardConst, .JumpBackwardConst => {
+            .JumpConst => {
                 if (self.register.get(.I) == 0) {
                     return;
                 }
@@ -271,14 +279,12 @@ pub const Machine = struct {
                 const mid_low = self.command.arguments[2];
                 const low = self.command.arguments[3];
 
-                var offset = (@as(i32, high) << 24) | (@as(i32, mid_high) << 16) | (@as(i32, mid_low) << 8) | @as(i32, low);
-                if (self.command.id == .JumpBackwardConst) {
-                    offset = -offset;
-                }
-
-                self.bytecode.moveCursor(offset) catch {
+                const position = (@as(u32, high) << 24) | (@as(u32, mid_high) << 16) | (@as(u32, mid_low) << 8) | @as(u32, low);
+                self.bytecode.moveCursor(position) catch {
                     return MachineError.FailedToJump;
                 };
+
+                self.block = true;
             },
 
             .SleepSeconds, .SleepMilliseconds => {
