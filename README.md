@@ -6,22 +6,33 @@
 
 ![logo](/assets/logo.svg)
 
-LLIM (**L**ow **L**evel **I**nput **M**anagement) is a small virtual machine focused on mouse and keyboard management for macOS. The virtual machine is written in Zig and aims to be safe, fast, and developer-friendly.
+**LLIM** (**L**ow **L**evel **I**nput **M**anagement) is a high-performance, lightweight virtual machine designed specifically for macOS input automation. Written in **Zig**, it provides a safe and low-level interface to simulate mouse and keyboard events using a custom 16-bit architecture. 🔋
 
 ---
 
 ### Features
 
-- 7 general-purpose 16-bit registers (`A`, `B`, `C`, `D`, `E`, `F`, `I`)
-- Fixed size stack
-- Permission system: `None`, `Read`, `Write`
-- Mouse and keyboard controlling
-- Memory safety
-- Ships with built-in assembler
+- **Register**: 7 general-purpose 16-bit registers (`A`, `B`, `C`, `D`, `E`, `F`, `I`).
+- **Stack**: Provides fixed size 16-bit stack.
+- **Memory**: Built-in stack and register management with safety checks.
+- **Permission**: Control over script execution (`None`, `Read`, `Write`).
+- **Native**: Directly interfaces with macOS API.
+- **Assembler**: Compile readable intermediate representation into compact binary.
 
-### Example
+### Compatibility
 
-This program demonstrates the core syntax and capabilities of the LLIM IR (**I**ntermediate **R**epresentation).
+#### Requirements
+
+- **Operating System**: macOS `10.15` or later.
+- **Zig**: Version `0.15.2`.
+
+#### Permission
+
+To function correctly, the compiled binary might require Accessibility Permissions. 
+
+### Assembly
+
+This program demonstrates the core syntax and capabilities of the **LLIM IR**.
 
 ```ruby
 .set_register @A 100 # @A = 100
@@ -51,9 +62,13 @@ This program demonstrates the core syntax and capabilities of the LLIM IR (**I**
 .debug # print registers and stack
 ```
 
+### Documentation
+
+For a full list of instructions and register details, please consult the [DOCS.md](./DOCS.md).
+
 ### Contributing
 
-Since the project is still evolving, please create an issue instead of PRs.
+The project is currently in active development. If you find a bug or have a request, please open an issue.
 
 ### License
 
