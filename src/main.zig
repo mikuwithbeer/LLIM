@@ -17,7 +17,7 @@ pub fn main() !void {
         std.debug.print(
             \\usage:
             \\  llim compile <source> <target>
-            \\  llim execute bytecode <target>
+            \\  llim execute [none|read|write] <target>
             \\
         , .{});
         return;
@@ -29,8 +29,8 @@ pub fn main() !void {
 
     if (std.mem.eql(u8, firstly, "compile")) {
         try compileFile(allocator, secondary, target);
-    } else if (std.mem.eql(u8, firstly, "execute") and std.mem.eql(u8, secondary, "bytecode")) {
-        try executeBytecodeFile(allocator, target);
+    } else if (std.mem.eql(u8, firstly, "execute")) {
+        try executeBytecodeFile(allocator, secondary, target);
     } else {
         unknownMode();
     }
@@ -76,11 +76,21 @@ fn compileFile(allocator: std.mem.Allocator, source: []const u8, target: []const
     std.debug.print("out {d} bytes.\n", .{assembler.bytes});
 }
 
-fn executeBytecodeFile(allocator: std.mem.Allocator, target: []const u8) !void {
+fn executeBytecodeFile(allocator: std.mem.Allocator, secondary: []const u8, target: []const u8) !void {
     var bytecode = try Bytecode.fromFile(allocator, target);
     var machine = try Machine.init(allocator, &bytecode);
 
-    machine.setPermission(.Write);
+    if (std.mem.eql(u8, secondary, "none")) {
+        machine.setPermission(.None);
+    } else if (std.mem.eql(u8, secondary, "read")) {
+        machine.setPermission(.Read);
+    } else if (std.mem.eql(u8, secondary, "write")) {
+        machine.setPermission(.Write);
+    } else {
+        std.debug.print("unknown execute permission.\n", .{});
+        return;
+    }
+
     machine.loop() catch |err| {
         std.debug.print(
             \\virtual machine error!
