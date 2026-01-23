@@ -324,6 +324,12 @@ pub const Machine = struct {
             .ExitMachine => {
                 self.state = .Exit;
             },
+            .DowngradePermission => {
+                self.permission = switch (self.permission) {
+                    .Write => .Read,
+                    else => .None,
+                };
+            },
 
             .GetMousePosition => {
                 const cursor = Input.getMousePosition();

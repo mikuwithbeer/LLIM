@@ -25,6 +25,7 @@ pub const CommandID = enum(u8) {
     SleepSeconds = 0x60,
     SleepMilliseconds = 0x61,
     ExitMachine = 0x62,
+    DowngradePermission = 0x63,
     // Input Controlling
     GetMousePosition = 0x90,
     SetMousePosition = 0x91,
@@ -62,6 +63,7 @@ pub const CommandID = enum(u8) {
             .SleepSeconds => 0,
             .SleepMilliseconds => 0,
             .ExitMachine => 0,
+            .DowngradePermission => 0,
 
             .GetMousePosition => 0,
             .SetMousePosition => 0,

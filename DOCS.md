@@ -70,6 +70,7 @@ The VM features seven unsigned 16-bit general-purpose registers:
 | `.keyboard_event` | `<id> <key>` | Performs keyboard action (`id` 0: Down, 1: Up; `key` is macOS keycode). |
 | `.sleep_seconds` | None | Pops value `N` from stack and sleeps for `N` seconds. |
 | `.sleep_milliseconds`| None | Pops value `N` from stack and sleeps for `N` milliseconds. |
+| `.downgrade_permission` | None | Downgrades virtual machine permission at runtime. (Write -> Read -> None <-) |
 
 #### Debugging
 

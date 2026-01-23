@@ -231,6 +231,9 @@ pub const Assembler = struct {
         } else if (std.mem.eql(u8, value, "exit")) {
             try self.appendByte(@intFromEnum(CommandID.ExitMachine));
             self.state = .Idle;
+        } else if (std.mem.eql(u8, value, "downgrade_permission")) {
+            try self.appendByte(@intFromEnum(CommandID.DowngradePermission));
+            self.state = .Idle;
         } else if (std.mem.eql(u8, value, "get_mouse_position")) {
             try self.appendByte(@intFromEnum(CommandID.GetMousePosition));
             self.state = .Idle;
