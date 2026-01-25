@@ -69,8 +69,11 @@ pub const Assembler = struct {
     pub fn prepare(self: *Assembler) AssemblerError!void {
         for (self.tokens.items) |token| {
             self.syncPosition(&token);
+
             switch (token.name) {
-                .Instruction => self.bytes += 1,
+                .Instruction, .Register => self.bytes += 1,
+                .Number => self.bytes += 2,
+                .Jump, .JumpConditional => self.bytes += 5,
                 .Label => {
                     if (self.labels.contains(token.value)) {
                         return AssemblerError.LabelAlreadyDefined;
@@ -80,12 +83,7 @@ pub const Assembler = struct {
                         return AssemblerError.OutOfMemory;
                     };
                 },
-                .Number => self.bytes += 2,
-                .Register => self.bytes += 1,
-                .Jump => self.bytes += 5,
-                .None => {
-                    // ignore
-                },
+                .None => unreachable,
             }
         }
     }
@@ -94,6 +92,7 @@ pub const Assembler = struct {
     pub fn loop(self: *Assembler) AssemblerError!void {
         for (self.tokens.items) |token| {
             self.syncPosition(&token);
+
             switch (self.state) {
                 .Idle => {
                     switch (token.name) {
@@ -105,7 +104,7 @@ pub const Assembler = struct {
                             // ignore labels in this state
                             // since they were handled in prepare phase
                         },
-                        .Jump => try self.handleJump(&token),
+                        .Jump, .JumpConditional => try self.handleJump(&token),
                         else => return AssemblerError.WaitingForInstruction,
                     }
                 },
@@ -165,7 +164,12 @@ pub const Assembler = struct {
             const mid_low = @as(u8, @intCast((position >> 8) & 0xFF));
             const low = @as(u8, @intCast(position & 0xFF));
 
-            try self.appendByte(@intFromEnum(CommandID.JumpConst));
+            switch (token.name) {
+                .JumpConditional => try self.appendByte(@intFromEnum(CommandID.JumpConstConditional)),
+                .Jump => try self.appendByte(@intFromEnum(CommandID.JumpConst)),
+                else => unreachable,
+            }
+
             try self.appendByte(high);
             try self.appendByte(mid_high);
             try self.appendByte(mid_low);

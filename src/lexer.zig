@@ -97,10 +97,9 @@ pub const Lexer = struct {
             try switch (self.token.name) {
                 .None => self.determineToken(character),
                 .Number => self.collectNumber(character),
-                .Label => self.collectLabel(character),
                 .Register => self.collectRegister(character),
                 .Instruction => self.collectInstruction(character),
-                .Jump => self.collectLabel(character),
+                .Label, .Jump, .JumpConditional => self.collectLabel(character),
             };
         }
     }
@@ -127,10 +126,11 @@ pub const Lexer = struct {
                 self.token.name = .Number;
                 try self.collectNumber(character);
             },
-            '<' => self.token.name = .Label,
+            ':' => self.token.name = .Label,
             '@' => self.token.name = .Register,
             '.' => self.token.name = .Instruction,
-            '>' => self.token.name = .Jump,
+            '^' => self.token.name = .Jump,
+            '?' => self.token.name = .JumpConditional,
             '#' => try self.collectComment(),
             ' ', '\t', '\n', '\r' => {
                 // ignore whitespace

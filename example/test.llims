@@ -29,7 +29,7 @@
 .set_register @I 4 # @I = 4
 #.downgrade_permission
 .get_mouse_position # @D = x, @E = y
-<LOOP
+:LOOP
   .add_register @D @A @D # @D = @D + @A
   .add_register @E @E @A # @E = @E + @A
   .sub_register @I @I @B # @I = @I - @B
@@ -38,7 +38,7 @@
   # sleep for 1 second
   .push_const 1
   .sleep_seconds
->LOOP
+?LOOP
 .mouse_event 0 # mouse left down
 # wait for a short time (250ms) between mouse events
 .push_const 250

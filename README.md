@@ -34,14 +34,14 @@ To function correctly, the compiled binary might require Accessibility Permissio
 
 This program demonstrates the core syntax and capabilities of the **LLIM IR**.
 
-```ruby
+```php
 .set_register @A 100 # @A = 100
 .set_register @B 1 # @B = 1
 .set_register @I 4 # @I = 4
 
 .get_mouse_position # @D = x, @E = y
 
-<LOOP # save position as LOOP
+:LOOP # save position as LOOP
   .add_register @D @A @D # @D = @D + @A
   .add_register @E @E @A # @E = @E + @A
   .sub_register @I @I @B # @I = @I - @B
@@ -50,7 +50,7 @@ This program demonstrates the core syntax and capabilities of the **LLIM IR**.
   # sleep for 1 second
   .push_const 1
   .sleep_seconds
->LOOP # if @I != 0 jump to LOOP
+?LOOP # if @I != 0 jump to LOOP
 
 .mouse_event 0 # mouse left down
 

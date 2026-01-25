@@ -17,6 +17,7 @@ pub const CommandID = enum(u8) {
     ModuloRegister = 0x09,
     PushRegister = 0x0A,
     // Control Flow
+    JumpConstConditional = 0x29,
     JumpConst = 0x30,
     CompareBiggerRegister = 0x31,
     CompareSmallerRegister = 0x32,
@@ -55,6 +56,7 @@ pub const CommandID = enum(u8) {
             .ModuloRegister => 3,
             .PushRegister => 1,
 
+            .JumpConstConditional => 4,
             .JumpConst => 4,
             .CompareBiggerRegister => 2,
             .CompareSmallerRegister => 2,

@@ -8,6 +8,7 @@ pub const TokenName = enum {
     Register,
     Instruction,
     Jump,
+    JumpConditional,
 };
 
 /// Represents a token with its type and value.

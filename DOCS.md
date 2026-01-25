@@ -23,7 +23,7 @@ The VM features seven unsigned 16-bit general-purpose registers:
 - **Numbers**: Defined as base 10, unsigned 16-bit (min `0`, max `65535`) integer.
   - **Note**: Character `'` might be used for numbers to make them more readable (e.g., `65'535`).
 - **Registers**: Prefixed with `@` (e.g., `@A`).
-- **Labels**: Defined with `<LABEL_NAME` and jumped to with `>LABEL_NAME`.
+- **Labels**: Defined with `:LABEL_NAME` and jumped to with `^LABEL_NAME` or `?LABEL_NAME` (the difference is explained later).
 - **Comments**: Start with `#` and continues until next line.
 
 ### Instruction Reference
@@ -53,8 +53,9 @@ The VM features seven unsigned 16-bit general-purpose registers:
 
 | Mnemonic | Arguments | Description |
 | :--- | :--- | :--- |
-| `<NAME` | None | Defines a label at the current position. |
-| `>NAME` | None | Jumps to label `NAME` if register `@I` is **not** zero. |
+| `:NAME` | None | Defines a label at the current position. |
+| `^NAME` | None | Jumps to label `NAME`. |
+| `?NAME` | None | Jumps to label `NAME` if register `@I` is **not** zero. |
 | `.compare_bigger` | `<r1> <r2>` | Sets `@I = 1` if `r1 > r2`, else `0`. |
 | `.compare_smaller`| `<r1> <r2>` | Sets `@I = 1` if `r1 < r2`, else `0`. |
 | `.compare_equal`  | `<r1> <r2>` | Sets `@I = 1` if `r1 == r2`, else `0`. |

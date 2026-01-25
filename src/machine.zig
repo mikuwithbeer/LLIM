@@ -268,8 +268,8 @@ pub const Machine = struct {
                 };
             },
 
-            .JumpConst => {
-                if (self.register.get(.I) == 0) {
+            .JumpConstConditional, .JumpConst => {
+                if (self.command.id == .JumpConstConditional and self.register.get(.I) == 0) {
                     return;
                 }
 
