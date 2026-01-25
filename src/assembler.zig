@@ -7,6 +7,40 @@ const CommandID = @import("command.zig").CommandID;
 const RegisterName = @import("register.zig").RegisterName;
 const Token = @import("token.zig").Token;
 
+const InstructionInfo = struct {
+    id: CommandID,
+    argc: usize,
+};
+
+const InstructionTable = std.StaticStringMap(InstructionInfo).initComptime(.{
+    .{ "push_const", InstructionInfo{ .id = .PushConst, .argc = 1 } },
+    .{ "pop_const", InstructionInfo{ .id = .PopConst, .argc = 1 } },
+    .{ "set_register", InstructionInfo{ .id = .MoveConstToRegister, .argc = 2 } },
+    .{ "copy_register", InstructionInfo{ .id = .CopyRegister, .argc = 2 } },
+    .{ "add_register", InstructionInfo{ .id = .AddRegister, .argc = 3 } },
+    .{ "sub_register", InstructionInfo{ .id = .SubtractRegister, .argc = 3 } },
+    .{ "mul_register", InstructionInfo{ .id = .MultiplyRegister, .argc = 3 } },
+    .{ "div_register", InstructionInfo{ .id = .DivideRegister, .argc = 3 } },
+    .{ "mod_register", InstructionInfo{ .id = .ModuloRegister, .argc = 3 } },
+    .{ "push_register", InstructionInfo{ .id = .PushRegister, .argc = 1 } },
+
+    .{ "compare_bigger_register", InstructionInfo{ .id = .CompareBiggerRegister, .argc = 2 } },
+    .{ "compare_smaller_register", InstructionInfo{ .id = .CompareSmallerRegister, .argc = 2 } },
+    .{ "compare_equal_register", InstructionInfo{ .id = .CompareEqualRegister, .argc = 2 } },
+
+    .{ "sleep_seconds", InstructionInfo{ .id = .SleepSeconds, .argc = 0 } },
+    .{ "sleep_milliseconds", InstructionInfo{ .id = .SleepMilliseconds, .argc = 0 } },
+    .{ "exit", InstructionInfo{ .id = .ExitMachine, .argc = 0 } },
+    .{ "downgrade_permission", InstructionInfo{ .id = .DowngradePermission, .argc = 0 } },
+    .{ "get_mouse_position", InstructionInfo{ .id = .GetMousePosition, .argc = 0 } },
+    .{ "set_mouse_position", InstructionInfo{ .id = .SetMousePosition, .argc = 0 } },
+    .{ "mouse_event", InstructionInfo{ .id = .MouseClick, .argc = 1 } },
+    .{ "keyboard_event", InstructionInfo{ .id = .KeyboardAction, .argc = 1 } },
+
+    .{ "noop", InstructionInfo{ .id = .None, .argc = 0 } },
+    .{ "debug", InstructionInfo{ .id = .Debug, .argc = 0 } },
+});
+
 /// Errors that can occur during assembly.
 pub const AssemblerError = error{
     OutOfMemory,
@@ -184,75 +218,14 @@ pub const Assembler = struct {
     /// Handles an instruction token by appending its bytecode.
     fn handleInstruction(self: *Assembler, token: *const Token) AssemblerError!void {
         const value = token.getValueSlice();
-        if (std.mem.eql(u8, value, "noop")) {
-            try self.appendByte(@intFromEnum(CommandID.None));
-            self.state = .Idle;
-        } else if (std.mem.eql(u8, value, "push_const")) {
-            try self.appendByte(@intFromEnum(CommandID.PushConst));
-            self.argc = 1;
-        } else if (std.mem.eql(u8, value, "pop_const")) {
-            try self.appendByte(@intFromEnum(CommandID.PopConst));
-            self.argc = 1;
-        } else if (std.mem.eql(u8, value, "set_register")) {
-            try self.appendByte(@intFromEnum(CommandID.MoveConstToRegister));
-            self.argc = 2;
-        } else if (std.mem.eql(u8, value, "copy_register")) {
-            try self.appendByte(@intFromEnum(CommandID.CopyRegister));
-            self.argc = 2;
-        } else if (std.mem.eql(u8, value, "add_register")) {
-            try self.appendByte(@intFromEnum(CommandID.AddRegister));
-            self.argc = 3;
-        } else if (std.mem.eql(u8, value, "sub_register")) {
-            try self.appendByte(@intFromEnum(CommandID.SubtractRegister));
-            self.argc = 3;
-        } else if (std.mem.eql(u8, value, "mul_register")) {
-            try self.appendByte(@intFromEnum(CommandID.MultiplyRegister));
-            self.argc = 3;
-        } else if (std.mem.eql(u8, value, "div_register")) {
-            try self.appendByte(@intFromEnum(CommandID.DivideRegister));
-            self.argc = 3;
-        } else if (std.mem.eql(u8, value, "mod_register")) {
-            try self.appendByte(@intFromEnum(CommandID.ModuloRegister));
-            self.argc = 3;
-        } else if (std.mem.eql(u8, value, "push_register")) {
-            try self.appendByte(@intFromEnum(CommandID.PushRegister));
-            self.argc = 1;
-        } else if (std.mem.eql(u8, value, "compare_bigger_register")) {
-            try self.appendByte(@intFromEnum(CommandID.CompareBiggerRegister));
-            self.argc = 2;
-        } else if (std.mem.eql(u8, value, "compare_smaller_register")) {
-            try self.appendByte(@intFromEnum(CommandID.CompareSmallerRegister));
-            self.argc = 2;
-        } else if (std.mem.eql(u8, value, "compare_equal_register")) {
-            try self.appendByte(@intFromEnum(CommandID.CompareEqualRegister));
-            self.argc = 2;
-        } else if (std.mem.eql(u8, value, "sleep_seconds")) {
-            try self.appendByte(@intFromEnum(CommandID.SleepSeconds));
-            self.state = .Idle;
-        } else if (std.mem.eql(u8, value, "sleep_milliseconds")) {
-            try self.appendByte(@intFromEnum(CommandID.SleepMilliseconds));
-            self.state = .Idle;
-        } else if (std.mem.eql(u8, value, "exit")) {
-            try self.appendByte(@intFromEnum(CommandID.ExitMachine));
-            self.state = .Idle;
-        } else if (std.mem.eql(u8, value, "downgrade_permission")) {
-            try self.appendByte(@intFromEnum(CommandID.DowngradePermission));
-            self.state = .Idle;
-        } else if (std.mem.eql(u8, value, "get_mouse_position")) {
-            try self.appendByte(@intFromEnum(CommandID.GetMousePosition));
-            self.state = .Idle;
-        } else if (std.mem.eql(u8, value, "set_mouse_position")) {
-            try self.appendByte(@intFromEnum(CommandID.SetMousePosition));
-            self.state = .Idle;
-        } else if (std.mem.eql(u8, value, "mouse_event")) {
-            try self.appendByte(@intFromEnum(CommandID.MouseClick));
-            self.argc = 1;
-        } else if (std.mem.eql(u8, value, "keyboard_event")) {
-            try self.appendByte(@intFromEnum(CommandID.KeyboardAction));
-            self.argc = 1;
-        } else if (std.mem.eql(u8, value, "debug")) {
-            try self.appendByte(@intFromEnum(CommandID.Debug));
-            self.state = .Idle;
+
+        if (InstructionTable.get(value)) |instruction| {
+            try self.appendByte(@intFromEnum(instruction.id));
+
+            self.argc = instruction.argc;
+            if (self.argc == 0) {
+                self.state = .Idle;
+            }
         } else {
             return AssemblerError.UnknownInstruction;
         }

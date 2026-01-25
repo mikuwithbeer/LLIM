@@ -1,6 +1,7 @@
 //! Lexer module for tokenizing source code files.
 
 const std = @import("std");
+
 const Token = @import("token.zig").Token;
 
 /// Represents errors that can occur during lexing operations.

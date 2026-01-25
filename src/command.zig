@@ -5,7 +5,6 @@ const std = @import("std");
 /// This module defines the various commands that can be executed by the virtual machine.
 pub const CommandID = enum(u8) {
     // Arithmetic and Data Management
-    None = 0x00,
     PushConst = 0x01,
     PopConst = 0x02,
     MoveConstToRegister = 0x03,
@@ -32,7 +31,8 @@ pub const CommandID = enum(u8) {
     SetMousePosition = 0x91,
     MouseClick = 0x92,
     KeyboardAction = 0x93,
-    // Debugging
+    // Other
+    None = 0x00,
     Debug = 0xFF,
 
     /// Converts a `u8` value to a `CommandID` enum variant.
@@ -44,7 +44,6 @@ pub const CommandID = enum(u8) {
     /// Later used for parsing bytecode instructions.
     pub fn argumentCount(self: CommandID) usize {
         return switch (self) {
-            .None => 0,
             .PushConst => 2,
             .PopConst => 1,
             .MoveConstToRegister => 3,
@@ -72,6 +71,7 @@ pub const CommandID = enum(u8) {
             .MouseClick => 2,
             .KeyboardAction => 2,
 
+            .None => 0,
             .Debug => 0,
         };
     }

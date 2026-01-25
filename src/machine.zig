@@ -174,7 +174,6 @@ pub const Machine = struct {
 
     fn doExecution(self: *Machine) MachineError!void {
         switch (self.command.id) {
-            .None => {},
             .PushConst => {
                 const high = self.command.arguments[0];
                 const low = self.command.arguments[1];
@@ -377,6 +376,7 @@ pub const Machine = struct {
                 }
             },
 
+            .None => {},
             .Debug => {
                 std.debug.print("Registers:\n", .{});
                 std.debug.print("| A = 0x{X}\n", .{self.register.get(.A)});
