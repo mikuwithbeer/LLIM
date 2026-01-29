@@ -1,6 +1,6 @@
 .{
     .name = .LLIM,
-    .version = "0.0.0",
+    .version = "0.0.1",
     .fingerprint = 0xa0d0855cf7a51b3c, // Changing this has security and trust implications.
 
     .minimum_zig_version = "0.15.2",
@@ -10,5 +10,8 @@
         "build.zig",
         "build.zig.zon",
         "src",
+        "LICENSE",
+        "README.md",
+        "DOCS.md",
     },
 }

@@ -18,12 +18,12 @@ pub const Bytecode = struct {
     allocator: std.mem.Allocator,
 
     cursor: usize,
-    values: std.ArrayListUnmanaged(u8),
+    values: std.ArrayList(u8),
 
     /// Initializes a new bytecode instance with an initial capacity that can hold up to `BytecodeSize` bytes.
     /// Must be deinitialized with `deinit` when no longer needed.
     pub fn init(allocator: std.mem.Allocator) BytecodeError!Bytecode {
-        const values = std.ArrayListUnmanaged(u8).initCapacity(allocator, BytecodeSize) catch {
+        const values = std.ArrayList(u8).initCapacity(allocator, BytecodeSize) catch {
             return BytecodeError.OutOfMemory;
         };
 

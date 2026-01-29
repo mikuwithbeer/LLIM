@@ -7,11 +7,13 @@ const CommandID = @import("command.zig").CommandID;
 const RegisterName = @import("register.zig").RegisterName;
 const Token = @import("token.zig").Token;
 
+/// Information about an instruction.
 const InstructionInfo = struct {
     id: CommandID,
     argc: usize,
 };
 
+/// Table mapping instruction names to their information.
 const InstructionTable = std.StaticStringMap(InstructionInfo).initComptime(.{
     .{ "push_const", InstructionInfo{ .id = .PushConst, .argc = 1 } },
     .{ "pop_const", InstructionInfo{ .id = .PopConst, .argc = 1 } },
