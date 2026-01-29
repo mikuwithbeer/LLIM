@@ -7,16 +7,7 @@ on:
 
 jobs:
   build-release:
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - target: x86_64-macos
-            os: macos-latest
-          - target: aarch64-macos
-            os: macos-latest
-
-    runs-on: ${{ matrix.os }}
+    runs-on: macos-latest
 
     steps:
       - uses: actions/checkout@v4
@@ -27,19 +18,17 @@ jobs:
           version: 0.15.2
 
       - name: Build
-        run: zig build -Dtarget=${{ matrix.target }} -Doptimize=ReleaseFast
+        run: zig build -Doptimize=ReleaseFast
 
       - name: Package
         run: |
           mkdir -p release
           cp zig-out/bin/LLIM release/
-          tar -czf LLIM-${{ matrix.target }}.tar.gz -C release LLIM
+          tar -czf LLIM.tar.gz -C release LLIM
 
       - name: Upload Release Assets
         uses: softprops/action-gh-release@v2
         with:
-          files: |
-            LLIM-${{ matrix.target }}.tar.gz
-            LLIM-${{ matrix.target }}.zip
+          files: LLIM.tar.gz
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
